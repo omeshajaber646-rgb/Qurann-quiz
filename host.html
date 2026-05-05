@@ -3,847 +3,835 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Host Panel - مسابقة القرآن</title>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<title>لعبة القرآن - الموعظة في سورة لقمان</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #C9A84C;
-    --gold-light: #F0D080;
-    --gold-dark: #8B6914;
-    --deep: #0D1B2A;
-    --deep2: #1A2F42;
-    --deep3: #243B52;
-    --white: #F5F0E8;
-    --cream: #EDE3CC;
-    --green: #2D6A4F;
-    --green-light: #52B788;
-    --red: #9B2226;
-    --red-light: #E63946;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #1a0533;
+    --card: #2d1155;
+    --accent1: #ff6b35;
+    --accent2: #ffd700;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --blue: #3498db;
+    --purple: #9b59b6;
+    --text: #f0e6ff;
+    --glow: rgba(255, 215, 0, 0.4);
+  }
 
   body {
     font-family: 'Cairo', sans-serif;
-    background: var(--deep);
-    color: var(--white);
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
-  }
-
-  .bg-pattern {
-    position: fixed;
-    inset: 0;
-    background-image: radial-gradient(circle at 10% 20%, rgba(201,168,76,0.07) 0%, transparent 50%),
-      radial-gradient(circle at 90% 80%, rgba(45,106,79,0.08) 0%, transparent 40%);
-    pointer-events: none;
-  }
-
-  /* Layout */
-  .host-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    min-height: 100vh;
-  }
-
-  /* Sidebar */
-  .sidebar {
-    background: linear-gradient(180deg, rgba(26,47,66,0.98), rgba(13,27,42,0.99));
-    border-left: 1px solid rgba(201,168,76,0.15);
-    padding: 24px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-  }
-
-  .sidebar-logo {
-    text-align: center;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(201,168,76,0.1);
-  }
-
-  .sidebar-logo h2 {
-    font-family: 'Amiri', serif;
-    color: var(--gold);
-    font-size: 20px;
-    margin-top: 8px;
-  }
-
-  .sidebar-logo p {
-    font-size: 11px;
-    color: rgba(245,240,232,0.35);
-    margin-top: 2px;
-  }
-
-  /* Stats */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .stat-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-
-  .stat-card.gold { border-color: rgba(201,168,76,0.25); background: rgba(201,168,76,0.07); }
-
-  .stat-num {
-    font-size: 28px;
-    font-weight: 900;
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: rgba(245,240,232,0.4);
-    margin-top: 4px;
-  }
-
-  /* Players list */
-  .section-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--gold);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .players-list {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  .player-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    margin-bottom: 6px;
-    animation: slideIn 0.3s ease;
-    transition: all 0.3s;
-  }
-
-  .player-item.answered { border-right: 3px solid var(--green-light); }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  .player-avatar {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
+    padding: 20px;
+    overflow-x: hidden;
   }
 
-  .player-info { flex: 1; min-width: 0; }
-  .player-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .player-score { font-size: 11px; color: var(--gold); }
-
-  .answered-badge {
-    font-size: 16px;
-    display: none;
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(155,89,182,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255,107,53,0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
   }
-  .player-item.answered .answered-badge { display: block; }
 
-  /* Main area */
-  .main-area {
-    padding: 32px;
+  .container {
+    max-width: 800px;
+    width: 100%;
     position: relative;
+    z-index: 1;
   }
 
-  /* Game status bar */
-  .status-bar {
+  /* ===== SCREENS ===== */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ===== INTRO ===== */
+  .intro-card {
+    background: linear-gradient(135deg, #3d1a6e, #1a0533);
+    border: 2px solid var(--accent2);
+    border-radius: 24px;
+    padding: 50px 40px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(255,215,0,0.2), 0 0 120px rgba(155,89,182,0.1);
+  }
+
+  .bismillah {
+    font-family: 'Amiri', serif;
+    font-size: 2rem;
+    color: var(--accent2);
+    text-shadow: 0 0 20px var(--glow);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .intro-title {
+    font-size: 2.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffd700, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+
+  .intro-sub {
+    font-size: 1.3rem;
+    color: #c9a8ff;
+    margin-bottom: 8px;
+  }
+
+  .intro-desc {
+    font-size: 1rem;
+    color: #9975cc;
+    margin-bottom: 40px;
+    line-height: 1.8;
+  }
+
+  .ayah-banner {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-bottom: 40px;
+    font-family: 'Amiri', serif;
+    font-size: 1.3rem;
+    color: #e8d5ff;
+    line-height: 2;
+  }
+
+  .ayah-ref {
+    font-size: 0.85rem;
+    color: var(--accent2);
+    margin-top: 8px;
+    font-family: 'Cairo', sans-serif;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, #ff6b35, #e83e8c);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 60px;
+    font-size: 1.5rem;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 30px rgba(255,107,53,0.4);
+    letter-spacing: 1px;
+  }
+
+  .btn-start:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 40px rgba(255,107,53,0.6);
+  }
+
+  /* ===== QUESTION ===== */
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.1);
+    border-radius: 50px;
+    height: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent1));
+    border-radius: 50px;
+    transition: width 0.5s ease;
+  }
+
+  .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .q-counter {
+    background: rgba(255,215,0,0.15);
+    border: 1px solid rgba(255,215,0,0.4);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 0.9rem;
+    color: var(--accent2);
+    font-weight: 700;
+  }
+
+  .score-badge {
+    background: rgba(46,204,113,0.15);
+    border: 1px solid rgba(46,204,113,0.4);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 0.9rem;
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  .timer-ring {
+    width: 70px;
+    height: 70px;
+    position: relative;
+    margin: 0 auto 20px;
+  }
+
+  .timer-ring svg {
+    transform: rotate(-90deg);
+  }
+
+  .timer-ring circle {
+    fill: none;
+    stroke-width: 5;
+  }
+
+  .timer-bg { stroke: rgba(255,255,255,0.1); }
+  .timer-fg {
+    stroke: var(--accent2);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s;
+  }
+
+  .timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--accent2);
+  }
+
+  .question-card {
+    background: linear-gradient(135deg, #3d1a6e, #2d0f55);
+    border: 2px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 24px;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .q-category {
+    font-size: 0.8rem;
+    color: #9975cc;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.8;
+    color: #f0e6ff;
+  }
+
+  .question-text.arabic-q {
+    font-family: 'Amiri', serif;
+    font-size: 1.6rem;
+    color: var(--accent2);
+  }
+
+  .answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .ans-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 20px 16px;
+    font-size: 1.05rem;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+    line-height: 1.5;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 16px;
-    padding: 16px 24px;
-    margin-bottom: 28px;
+    justify-content: center;
   }
 
-  .status-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--green-light);
-    box-shadow: 0 0 8px var(--green-light);
-    animation: pulse 2s ease-in-out infinite;
+  .ans-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .ans-btn:hover:not(:disabled)::before { opacity: 1; }
+  .ans-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+
+  .ans-btn[data-shape="triangle"] { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+  .ans-btn[data-shape="diamond"]  { background: linear-gradient(135deg, #3498db, #1a6fa8); color: white; }
+  .ans-btn[data-shape="circle"]   { background: linear-gradient(135deg, #f39c12, #d68910); color: white; }
+  .ans-btn[data-shape="square"]   { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; }
+
+  .ans-btn.correct {
+    background: linear-gradient(135deg, #2ecc71, #1a8a4a) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(46,204,113,0.6);
+  }
+
+  .ans-btn.wrong {
+    background: linear-gradient(135deg, #636363, #444) !important;
+    opacity: 0.6;
+    transform: scale(0.97);
+  }
+
+  .ans-btn.shake {
+    animation: shake 0.4s ease;
+  }
+
+  .shape-icon {
+    font-size: 1.3rem;
     margin-left: 8px;
     display: inline-block;
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+  /* ===== FEEDBACK ===== */
+  .feedback-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
   }
 
-  .status-text { font-size: 14px; color: rgba(245,240,232,0.6); }
-  .status-text strong { color: var(--white); }
+  .feedback-overlay.show { opacity: 1; }
 
-  /* Lobby screen */
-  .screen { display: none; }
-  .screen.active { display: block; animation: fadeUp 0.5s ease; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  .feedback-box {
+    background: rgba(10,0,25,0.92);
+    border-radius: 20px;
+    padding: 30px 50px;
+    text-align: center;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
   }
 
-  .lobby-center {
+  .feedback-box.correct-fb { border-color: var(--green); box-shadow: 0 0 50px rgba(46,204,113,0.4); }
+  .feedback-box.wrong-fb  { border-color: var(--red);   box-shadow: 0 0 50px rgba(231,76,60,0.4); }
+
+  .feedback-emoji { font-size: 3rem; margin-bottom: 10px; }
+  .feedback-text  { font-size: 1.5rem; font-weight: 900; }
+  .feedback-answer { font-size: 0.95rem; color: #ccc; margin-top: 8px; }
+
+  /* ===== RESULT ===== */
+  .result-card {
+    background: linear-gradient(135deg, #3d1a6e, #1a0533);
+    border: 2px solid var(--accent2);
+    border-radius: 24px;
+    padding: 50px 40px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(255,215,0,0.2);
+  }
+
+  .result-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+
+  .result-score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b35, #9b59b6);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60vh;
-    text-align: center;
+    margin: 20px auto;
+    box-shadow: 0 0 50px rgba(255,107,53,0.4);
   }
 
-  .lobby-icon { font-size: 72px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-
-  .lobby-title {
-    font-family: 'Amiri', serif;
-    font-size: 32px;
-    color: var(--gold-light);
-    margin-bottom: 8px;
-  }
-
-  .lobby-sub {
-    color: rgba(245,240,232,0.4);
-    font-size: 15px;
-    margin-bottom: 40px;
-  }
-
-  .big-players-count {
-    font-size: 80px;
+  .result-score-num {
+    font-size: 3rem;
     font-weight: 900;
-    color: var(--gold);
+    color: white;
     line-height: 1;
-    text-shadow: 0 0 40px rgba(201,168,76,0.3);
   }
 
-  .big-label {
-    font-size: 16px;
-    color: rgba(245,240,232,0.5);
-    margin-top: 8px;
-    margin-bottom: 40px;
+  .result-score-max {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.7);
   }
 
-  /* Buttons */
-  .btn {
-    padding: 16px 40px;
-    border: none;
-    border-radius: 14px;
-    font-family: 'Cairo', sans-serif;
-    font-size: 17px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.3s;
-    letter-spacing: 0.5px;
-  }
-
-  .btn-start {
-    background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
-    color: var(--deep);
-    box-shadow: 0 6px 24px rgba(201,168,76,0.3);
-    min-width: 220px;
-  }
-
-  .btn-start:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(201,168,76,0.4); }
-  .btn-start:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  .btn-next {
-    background: linear-gradient(135deg, var(--green), var(--green-light));
-    color: var(--white);
-    box-shadow: 0 6px 24px rgba(45,106,79,0.3);
-    min-width: 180px;
-  }
-
-  .btn-next:hover { transform: translateY(-2px); }
-
-  .btn-sm {
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 10px;
-  }
-
-  /* Question display */
-  .question-card {
-    background: linear-gradient(145deg, rgba(26,47,66,0.9), rgba(13,27,42,0.95));
-    border: 1px solid rgba(201,168,76,0.2);
-    border-radius: 20px;
-    padding: 32px;
-    margin-bottom: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  }
-
-  .q-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-
-  .q-badge {
-    background: rgba(201,168,76,0.1);
-    border: 1px solid rgba(201,168,76,0.25);
-    color: var(--gold);
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
+  .result-level {
+    font-size: 1.5rem;
     font-weight: 700;
+    margin: 16px 0;
+    padding: 10px 30px;
+    border-radius: 50px;
+    display: inline-block;
   }
 
-  .big-timer {
-    font-size: 48px;
-    font-weight: 900;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(201,168,76,0.3);
-    min-width: 70px;
-    text-align: center;
-    transition: color 0.3s;
+  .result-msg { color: #c9a8ff; margin-bottom: 30px; line-height: 1.8; font-size: 1rem; }
+
+  .review-section {
+    margin-top: 30px;
+    text-align: right;
   }
 
-  .big-timer.urgent { color: #f87171; text-shadow: 0 0 20px rgba(248,113,113,0.4); }
-
-  .q-text {
-    font-family: 'Amiri', serif;
-    font-size: 26px;
-    line-height: 1.8;
-    text-align: center;
-    color: var(--white);
-    padding: 20px 0;
-  }
-
-  .answers-display {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 20px;
-  }
-
-  .answer-display {
-    padding: 16px 18px;
-    border-radius: 14px;
-    font-size: 15px;
+  .review-title {
+    font-size: 1.1rem;
+    color: var(--accent2);
+    margin-bottom: 16px;
     font-weight: 700;
-    border: 2px solid transparent;
-    transition: all 0.4s;
+    text-align: center;
   }
 
-  .answer-display:nth-child(1) { background: rgba(220,53,69,0.12); border-color: rgba(220,53,69,0.25); color: #ff8591; }
-  .answer-display:nth-child(2) { background: rgba(13,110,253,0.12); border-color: rgba(13,110,253,0.25); color: #7eb3ff; }
-  .answer-display:nth-child(3) { background: rgba(25,135,84,0.12); border-color: rgba(25,135,84,0.25); color: #71e5a0; }
-  .answer-display:nth-child(4) { background: rgba(255,193,7,0.12); border-color: rgba(255,193,7,0.25); color: #ffe082; }
-
-  .answer-display.correct-highlight {
-    transform: scale(1.03);
-    box-shadow: 0 6px 20px rgba(82,183,136,0.3);
-    border-color: var(--green-light) !important;
-    background: rgba(82,183,136,0.2) !important;
-    color: #b7f5cd !important;
-  }
-
-  /* Progress bar */
-  .answers-progress {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-  }
-
-  .progress-title {
-    font-size: 13px;
-    color: rgba(245,240,232,0.5);
-    margin-bottom: 12px;
-  }
-
-  .progress-bar-wrap {
+  .review-item {
     background: rgba(255,255,255,0.05);
-    border-radius: 8px;
-    height: 12px;
-    overflow: hidden;
-    margin-bottom: 6px;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-right: 4px solid;
+    font-size: 0.9rem;
+    line-height: 1.7;
   }
 
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
-    border-radius: 8px;
-    transition: width 0.5s ease;
+  .review-item.ok  { border-color: var(--green); }
+  .review-item.bad { border-color: var(--red); }
+
+  .review-q  { font-weight: 700; color: #e0d0ff; margin-bottom: 4px; }
+  .review-a  { color: #aaa; }
+  .review-c  { color: var(--green); font-weight: 600; }
+
+  .confetti {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 200;
   }
 
-  .progress-nums {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: rgba(245,240,232,0.4);
+  @keyframes confetti-fall {
+    0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
 
-  /* Result/Leaderboard */
-  .lb-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
+  .confetti-piece {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    animation: confetti-fall linear forwards;
   }
 
-  .lb-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 18px 16px;
-    text-align: center;
-    animation: slideIn 0.4s ease both;
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
   }
 
-  .lb-card:nth-child(1) {
-    border-color: rgba(201,168,76,0.4);
-    background: rgba(201,168,76,0.1);
+  @keyframes pop-in {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
   }
 
-  .lb-medal { font-size: 32px; margin-bottom: 8px; }
-  .lb-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
-  .lb-score { color: var(--gold); font-size: 24px; font-weight: 900; }
+  .pop-in { animation: pop-in 0.4s ease forwards; }
 
-  .action-row {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    margin-top: 28px;
-  }
-
-  /* Reset btn */
-  .btn-reset {
-    background: rgba(155,34,38,0.2);
-    border: 1px solid rgba(230,57,70,0.3);
-    color: #ff8591;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-family: 'Cairo', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  .btn-reset:hover { background: rgba(155,34,38,0.4); }
-
-  .screen-title {
-    font-family: 'Amiri', serif;
-    font-size: 26px;
-    color: var(--gold-light);
-    margin-bottom: 24px;
-  }
-
-  .answered-count {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--green-light);
+  @media (max-width: 600px) {
+    .answers-grid { grid-template-columns: 1fr; }
+    .intro-title { font-size: 1.9rem; }
+    .question-text { font-size: 1.15rem; }
+    .intro-card, .result-card { padding: 30px 20px; }
   }
 </style>
 </head>
 <body>
-<div class="bg-pattern"></div>
 
-<div class="host-layout">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-logo">
-      <div style="font-size:32px">🎮</div>
-      <h2>Host Panel</h2>
-      <p>مسابقة الموعظة من القرآن</p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card gold">
-        <div class="stat-num" id="totalPlayers">0</div>
-        <div class="stat-label">لاعب</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="answeredCount">0</div>
-        <div class="stat-label">أجاب</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="currentQNum">-</div>
-        <div class="stat-label">السؤال</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="totalQNum">12</div>
-        <div class="stat-label">إجمالي</div>
-      </div>
-    </div>
-
-    <div>
-      <div class="section-title">اللاعبون</div>
-      <div class="players-list" id="playersList"></div>
-    </div>
-
-    <button class="btn-reset" onclick="resetGame()">🔄 إعادة تعيين اللعبة</button>
-  </div>
-
-  <!-- Main -->
-  <div class="main-area">
-    <div class="status-bar">
-      <div>
-        <span class="status-dot"></span>
-        <span class="status-text">الحالة: <strong id="statusText">في انتظار اللاعبين</strong></span>
-      </div>
-      <div style="font-size:12px; color:rgba(245,240,232,0.3);">رابط اللاعبين: <span style="color:var(--gold)">index.html</span></div>
-    </div>
-
-    <!-- Lobby -->
-    <div class="screen active" id="lobbyScreen">
-      <div class="lobby-center">
-        <div class="lobby-icon">📖</div>
-        <h1 class="lobby-title">مسابقة الموعظة من القرآن الكريم</h1>
-        <p class="lobby-sub">أرسل الرابط للاعبين وانتظر انضمامهم</p>
-        <div class="big-players-count" id="bigPlayerCount">0</div>
-        <div class="big-label">لاعب انضم</div>
-        <button class="btn btn-start" id="startBtn" onclick="startGame()" disabled>
-          🚀 ابدأ المسابقة
-        </button>
-        <p style="font-size:12px; color:rgba(245,240,232,0.3); margin-top:12px;">يحتاج على الأقل لاعب واحد للبدء</p>
-      </div>
-    </div>
-
-    <!-- Question Screen -->
-    <div class="screen" id="questionScreen">
-      <div class="question-card">
-        <div class="q-meta">
-          <div class="q-badge" id="hostQBadge">سؤال 1 / 12</div>
-          <div class="big-timer" id="hostTimer">20</div>
-        </div>
-        <div class="q-text" id="hostQText">السؤال</div>
-        <div class="answers-display" id="hostAnswers">
-          <div class="answer-display">أ</div>
-          <div class="answer-display">ب</div>
-          <div class="answer-display">ج</div>
-          <div class="answer-display">د</div>
-        </div>
-      </div>
-
-      <div class="answers-progress">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div class="progress-title">الإجابات الواردة</div>
-          <div class="answered-count"><span id="liveAnswered">0</span> / <span id="liveTotalP">0</span></div>
-        </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" id="answerProgressBar" style="width:0%"></div>
-        </div>
-      </div>
-
-      <div class="action-row">
-        <button class="btn btn-next btn-sm" id="nextBtn" onclick="showResults()">
-          عرض النتائج ←
-        </button>
-      </div>
-    </div>
-
-    <!-- Results Screen -->
-    <div class="screen" id="resultsScreen">
-      <div class="screen-title">📊 نتائج السؤال</div>
-      <div id="resultsGrid" class="lb-grid"></div>
-      <div class="action-row">
-        <button class="btn btn-next btn-sm" id="continueBtn" onclick="nextQuestion()">
-          السؤال التالي ←
-        </button>
-      </div>
-    </div>
-
-    <!-- Final Leaderboard -->
-    <div class="screen" id="finalScreen">
-      <div class="screen-title">🏆 النتائج النهائية</div>
-      <div id="finalGrid" class="lb-grid"></div>
-      <div class="action-row">
-        <button class="btn btn-start btn-sm" onclick="resetGame()">🔄 لعبة جديدة</button>
-      </div>
-    </div>
+<!-- Feedback Overlay -->
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="feedback-box" id="feedbackBox">
+    <div class="feedback-emoji" id="feedbackEmoji"></div>
+    <div class="feedback-text" id="feedbackText"></div>
+    <div class="feedback-answer" id="feedbackAnswer"></div>
   </div>
 </div>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
-    const firebaseConfig = {
-  apiKey: "AIzaSyB_2J5bXDeBKe0HCf2Bz6wwc7aj8iCU44E",
-  authDomain: "quran-quiz-3d972.firebaseapp.com",
-  databaseURL: "https://quran-quiz-3d972-default-rtdb.firebaseio.com",
-  projectId: "quran-quiz-3d972",
-  storageBucket: "quran-quiz-3d972.firebasestorage.app",
-  messagingSenderId: "240103544272",
-  appId: "1:240103544272:web:97fcdeedd222a72e1a15d5",
-  measurementId: "G-FNYRXBTFBY"
-};
+<canvas class="confetti" id="confettiCanvas"></canvas>
 
+<div class="container">
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  <!-- INTRO -->
+  <div class="screen active" id="introScreen">
+    <div class="intro-card pop-in">
+      <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+      <div class="intro-title">الموعظة في سورة لقمان</div>
+      <div class="intro-sub">لعبة أسئلة تفاعلية</div>
+      <div class="intro-desc">
+        اختبر معلوماتك عن الموعظة القرآنية ومفاهيمها في سورة لقمان الكريمة<br>
+        10 أسئلة • 20 ثانية لكل سؤال
+      </div>
+      <div class="ayah-banner">
+        ﴿ يَا بُنَيَّ أَقِمِ الصَّلَاةَ وَأْمُرْ بِالْمَعْرُوفِ وَانْهَ عَنِ الْمُنكَرِ وَاصْبِرْ عَلَىٰ مَا أَصَابَكَ ﴾
+        <div class="ayah-ref">سورة لقمان • الآية 17</div>
+      </div>
+      <button class="btn-start" onclick="startGame()">▶ ابدأ اللعبة</button>
+    </div>
+  </div>
 
-  const questions = [
-    { text: "ما معنى كلمة 'موعظة' لغةً؟", answers: ["الأمر والنهي", "النصح والتذكير بعواقب الأمور", "القراءة والتلاوة", "الدعاء والاستغفار"], correct: 1 },
-    { text: "في أي سورة وردت الآية: ﴿يا أيها الناس قد جاءتكم موعظة من ربكم وشفاء لما في الصدور﴾؟", answers: ["سورة البقرة", "سورة آل عمران", "سورة يونس", "سورة الأنفال"], correct: 2 },
-    { text: "ما رقم الآية التي وصف فيها الله القرآن بأنه موعظة وشفاء في سورة يونس؟", answers: ["آية 55", "آية 57", "آية 60", "آية 45"], correct: 1 },
-    { text: "ما الهدف من الموعظة بالقصص القرآني؟", answers: ["التسلية والترفيه", "أخذ العبرة والاتعاظ", "تعلم اللغة العربية", "حفظ التاريخ"], correct: 1 },
-    { text: "من السورة الكريمة الآية: ﴿لقد كان في قصصهم عبرة لأولي الألباب﴾؟", answers: ["سورة يوسف", "سورة الكهف", "سورة طه", "سورة مريم"], correct: 0 },
-    { text: "ما رقم الآية ﴿لقد كان في قصصهم عبرة لأولي الألباب﴾ في سورة يوسف؟", answers: ["آية 90", "آية 100", "آية 111", "آية 120"], correct: 2 },
-    { text: "ما أولى وصايا لقمان لابنه كما وردت في القرآن الكريم؟", answers: ["بر الوالدين", "إقامة الصلاة", "توحيد الله وترك الشرك", "حسن الخلق"], correct: 2 },
-    { text: "لماذا وصف القرآن الكريم الشرك بأنه ظلم عظيم؟", answers: ["لأنه يضر المجتمع", "لأنه يظلم النفس ويهدر قيمتها", "لأنه يسبب الفتن", "لأنه يضعف الدولة"], correct: 1 },
-    { text: "ما الوصية الثانية من وصايا لقمان لابنه؟", answers: ["إقامة الصلاة", "حسن الخلق", "بر الوالدين", "الصبر على الشدائد"], correct: 2 },
-    { text: "ما الوصف الذي ذكره الله للأم في سياق وصية لقمان ببر الوالدين؟", answers: ["صبرها وتضحيتها", "علمها وحكمتها", "قوتها وشجاعتها", "كرمها وعطاؤها"], correct: 0 },
-    { text: "ما الوصية الثالثة من وصايا لقمان؟", answers: ["حسن الخلق والتواضع", "إقامة الصلاة والأمر بالمعروف", "الجهاد في سبيل الله", "طلب العلم والمعرفة"], correct: 1 },
-    { text: "ما الصفة التي يجعلها التواضع في المؤمن وفق وصايا لقمان؟", answers: ["قوياً ومهاباً", "مقبولاً ومحبوباً", "غنياً ومرفهاً", "عالماً ومثقفاً"], correct: 1 },
-  ];
+  <!-- QUESTION -->
+  <div class="screen" id="questionScreen">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="q-header">
+      <div class="q-counter" id="qCounter">سؤال 1 / 10</div>
+      <div class="score-badge" id="scoreBadge">النقاط: 0</div>
+    </div>
+    <div class="timer-ring">
+      <svg width="70" height="70" viewBox="0 0 70 70">
+        <circle class="timer-bg" cx="35" cy="35" r="30"/>
+        <circle class="timer-fg" id="timerCircle" cx="35" cy="35" r="30"
+          stroke-dasharray="188.5" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-text" id="timerText">20</div>
+    </div>
+    <div class="question-card">
+      <div class="q-category" id="qCategory">المفاهيم</div>
+      <div class="question-text" id="questionText"></div>
+    </div>
+    <div class="answers-grid" id="answersGrid"></div>
+  </div>
 
-  let currentQIndex = -1;
-  let timerInterval = null;
-  let timeLeft = 20;
-  let playersData = {};
+  <!-- RESULT -->
+  <div class="screen" id="resultScreen">
+    <div class="result-card pop-in">
+      <div class="result-title">🏆 انتهت اللعبة!</div>
+      <div class="result-score-circle">
+        <div class="result-score-num" id="finalScore">0</div>
+        <div class="result-score-max">من 1000</div>
+      </div>
+      <div class="result-level" id="resultLevel"></div>
+      <div class="result-msg" id="resultMsg"></div>
+      <button class="btn-start" onclick="restartGame()" style="font-size:1.1rem; padding:14px 40px;">
+        🔄 العب مرة أخرى
+      </button>
+      <div class="review-section">
+        <div class="review-title">📋 مراجعة الإجابات</div>
+        <div id="reviewList"></div>
+      </div>
+    </div>
+  </div>
 
-  // Watch players
-  onValue(ref(db, 'players'), (snap) => {
-    playersData = snap.exists() ? snap.val() : {};
-    const count = Object.keys(playersData).length;
-    document.getElementById('totalPlayers').textContent = count;
-    document.getElementById('bigPlayerCount').textContent = count;
-    document.getElementById('liveTotalP').textContent = count;
-    document.getElementById('startBtn').disabled = count === 0;
-    renderPlayersList();
-  });
+</div>
 
-  // Watch answers for live count
-  onValue(ref(db, 'players'), (snap) => {
-    if (!snap.exists() || currentQIndex < 0) return;
-    const players = Object.values(snap.val());
-    const answered = players.filter(p => p.lastAnswer !== null && p.lastAnswer !== undefined).length;
-    const total = players.length;
-    document.getElementById('liveAnswered').textContent = answered;
-    document.getElementById('answeredCount').textContent = answered;
-    const pct = total > 0 ? (answered / total * 100) : 0;
-    document.getElementById('answerProgressBar').style.width = pct + '%';
-
-    // Update answered badges
-    const items = document.querySelectorAll('.player-item');
-    items.forEach(item => {
-      const key = item.dataset.key;
-      if (snap.val()[key]?.lastAnswer !== null && snap.val()[key]?.lastAnswer !== undefined) {
-        item.classList.add('answered');
-      }
-    });
-  });
-
-  function renderPlayersList() {
-    const list = document.getElementById('playersList');
-    list.innerHTML = '';
-    const sorted = Object.entries(playersData).sort((a,b) => b[1].score - a[1].score);
-    sorted.forEach(([key, p]) => {
-      const div = document.createElement('div');
-      div.className = 'player-item';
-      div.dataset.key = key;
-      div.innerHTML = `
-        <div class="player-avatar">${p.name.charAt(0)}</div>
-        <div class="player-info">
-          <div class="player-name">${p.name}</div>
-          <div class="player-score">${p.score} نقطة</div>
-        </div>
-        <div class="answered-badge">✅</div>
-      `;
-      list.appendChild(div);
-    });
+<script>
+const questions = [
+  {
+    category: "تعريف الموعظة",
+    text: "ما معنى كلمة \"الموعظة\" في اللغة العربية؟",
+    answers: ["التذكير بالخير مع الترغيب والترهيب", "الأمر بالمعروف فقط", "تلاوة القرآن الكريم", "الدعاء والتضرع لله"],
+    correct: 0,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "وصية لقمان",
+    text: "بماذا بدأ لقمان وصيته لابنه أولاً؟",
+    answers: ["إقامة الصلاة", "النهي عن الشرك بالله", "بر الوالدين", "الصدق في القول"],
+    correct: 1,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "آيات قرآنية",
+    text: "أكمل الآية: ﴿ يَا بُنَيَّ لَا تُشْرِكْ بِاللَّهِ ۖ إِنَّ الشِّرْكَ ...﴾",
+    answers: ["لَظُلْمٌ عَظِيمٌ", "لَكُفْرٌ مُبِينٌ", "لَذَنْبٌ كَبِيرٌ", "لَخَسَارَةٌ عَظِيمَةٌ"],
+    correct: 0,
+    shapes: ["triangle","diamond","circle","square"],
+    isArabic: true
+  },
+  {
+    category: "قيم الموعظة",
+    text: "ما الصفة التي أوصى بها لقمان ابنه عند مواجهة الأذى والصعاب؟",
+    answers: ["الانتقام", "الصبر", "الفرار", "الاستسلام"],
+    correct: 1,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "الأمر بالمعروف",
+    text: "ما العبادة التي أمر بها لقمان ابنه صراحةً في سورة لقمان؟",
+    answers: ["الزكاة", "الصيام", "إقامة الصلاة", "الحج"],
+    correct: 2,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "أخلاق الموعظة",
+    text: "نهى لقمان ابنه عن سلوك متكبر؛ ما هذا السلوك تحديداً؟",
+    answers: ["رفع الصوت عند الكلام", "تصعير الخد للناس والمشي مرحاً", "ترك الصلاة", "البخل بالمال"],
+    correct: 1,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "آيات قرآنية",
+    text: "وصف الله صوت الحمار بأنه أنكر الأصوات في سياق النهي عن ماذا؟",
+    answers: ["الكذب", "الغضب", "رفع الصوت والتكبر", "الغيبة"],
+    correct: 2,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "حكمة لقمان",
+    text: "من هو لقمان حسب أقوى الآراء عند المفسرين؟",
+    answers: ["نبي من الأنبياء", "رجل صالح حكيم أعطاه الله الحكمة", "ملك من ملوك اليمن", "صحابي جليل"],
+    correct: 1,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "مفاهيم الموعظة",
+    text: "تضمنت موعظة لقمان جانباً مهماً مع الوالدين؛ ما هو؟",
+    answers: ["طاعتهما في كل شيء حتى الشرك", "الشكر لهما وصحبتهما بالمعروف", "الابتعاد عنهما للعبادة", "إعطاؤهما المال فقط"],
+    correct: 1,
+    shapes: ["triangle","diamond","circle","square"]
+  },
+  {
+    category: "تدبر الآيات",
+    text: "ماذا تعني الآية: ﴿إِنَّ اللَّهَ لَطِيفٌ خَبِيرٌ﴾ في سياق سورة لقمان؟",
+    answers: ["الله يعلم ما في الأرحام فقط", "الله لطيف بعباده لا يعلم السر", "الله مطلع على أدق التفاصيل ولو كانت مثقال حبة خردل", "الله يحاسب الناس في الدنيا فقط"],
+    correct: 2,
+    shapes: ["triangle","diamond","circle","square"]
   }
+];
 
-  window.startGame = function() {
-    currentQIndex = 0;
+const SHAPES = { triangle: "▲", diamond: "◆", circle: "●", square: "■" };
+const COLORS = ["#e74c3c","#3498db","#f39c12","#27ae60"];
+
+let currentQ = 0, score = 0, timerInterval, timeLeft = 20;
+let userAnswers = [];
+
+function startGame() {
+  currentQ = 0; score = 0; userAnswers = [];
+  document.getElementById('introScreen').classList.remove('active');
+  document.getElementById('questionScreen').classList.add('active');
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  document.getElementById('progressBar').style.width = ((currentQ/total)*100)+'%';
+  document.getElementById('qCounter').textContent = `سؤال ${currentQ+1} / ${total}`;
+  document.getElementById('scoreBadge').textContent = `النقاط: ${score}`;
+  document.getElementById('qCategory').textContent = q.category;
+
+  const qt = document.getElementById('questionText');
+  qt.textContent = q.text;
+  qt.className = 'question-text' + (q.isArabic ? ' arabic-q' : '');
+
+  const grid = document.getElementById('answersGrid');
+  grid.innerHTML = '';
+
+  q.answers.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.dataset.shape = q.shapes[i];
+    btn.innerHTML = `<span class="shape-icon">${SHAPES[q.shapes[i]]}</span> ${ans}`;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  timeLeft = 20;
+  clearInterval(timerInterval);
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) { clearInterval(timerInterval); timeOut(); }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const circumference = 188.5;
+  const offset = circumference * (1 - timeLeft/20);
+  const circle = document.getElementById('timerCircle');
+  const text = document.getElementById('timerText');
+  circle.style.strokeDashoffset = offset;
+  text.textContent = timeLeft;
+  circle.style.stroke = timeLeft > 10 ? '#ffd700' : timeLeft > 5 ? '#ff6b35' : '#e74c3c';
+  text.style.color    = timeLeft > 10 ? '#ffd700' : timeLeft > 5 ? '#ff6b35' : '#e74c3c';
+}
+
+function selectAnswer(idx) {
+  clearInterval(timerInterval);
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.ans-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const isCorrect = idx === q.correct;
+  const points = isCorrect ? Math.round(50 + (timeLeft/20)*50) * 10 : 0;
+  if (isCorrect) score += points;
+
+  userAnswers.push({ correct: isCorrect, userIdx: idx, correctIdx: q.correct });
+
+  btns[idx].classList.add(isCorrect ? 'correct' : 'shake');
+  if (!isCorrect) btns[q.correct].classList.add('correct');
+  btns.forEach((b,i) => { if(i!==idx && i!==q.correct) b.classList.add('wrong'); });
+
+  showFeedback(isCorrect, q.answers[q.correct], points);
+}
+
+function timeOut() {
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.ans-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.correct].classList.add('correct');
+  btns.forEach((b,i) => { if(i!==q.correct) b.classList.add('wrong'); });
+  userAnswers.push({ correct: false, userIdx: -1, correctIdx: q.correct });
+  showFeedback(false, q.answers[q.correct], 0, true);
+}
+
+function showFeedback(isCorrect, correctAns, points, timeout=false) {
+  const overlay = document.getElementById('feedbackOverlay');
+  const box = document.getElementById('feedbackBox');
+  const emoji = document.getElementById('feedbackEmoji');
+  const text = document.getElementById('feedbackText');
+  const answer = document.getElementById('feedbackAnswer');
+
+  box.className = 'feedback-box ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+  emoji.textContent = timeout ? '⏰' : isCorrect ? '✅' : '❌';
+  text.textContent = timeout ? 'انتهى الوقت!' : isCorrect ? `رائع! +${points} نقطة` : 'إجابة خاطئة';
+  text.style.color = isCorrect ? '#2ecc71' : '#e74c3c';
+  answer.textContent = isCorrect ? '' : `الإجابة الصحيحة: ${correctAns}`;
+
+  overlay.classList.add('show');
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    nextQuestion();
+  }, 1800);
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ < questions.length) {
     showQuestion();
-  };
+  } else {
+    showResults();
+  }
+}
 
-  function showQuestion() {
-    if (currentQIndex >= questions.length) {
-      endGame();
-      return;
-    }
+function showResults() {
+  document.getElementById('questionScreen').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('active');
 
-    const q = questions[currentQIndex];
-    timeLeft = 20;
+  const maxScore = questions.length * 1000;
+  const pct = score / maxScore;
 
-    // Reset all player lastAnswers
-    Object.keys(playersData).forEach(key => {
-      set(ref(db, `players/${key}/lastAnswer`), null);
-    });
+  document.getElementById('finalScore').textContent = score;
 
-    // Push to Firebase
-    set(ref(db, 'game'), {
-      status: 'question',
-      qIndex: currentQIndex,
-      totalQ: questions.length,
-      currentQuestion: {
-        text: q.text,
-        answers: q.answers,
-        correct: q.correct
-      }
-    });
-
-    // Update UI
-    document.getElementById('statusText').textContent = `سؤال ${currentQIndex + 1} من ${questions.length}`;
-    document.getElementById('currentQNum').textContent = currentQIndex + 1;
-    document.getElementById('hostQBadge').textContent = `سؤال ${currentQIndex + 1} / ${questions.length}`;
-    document.getElementById('hostQText').textContent = q.text;
-
-    const answerDivs = document.querySelectorAll('.answer-display');
-    answerDivs.forEach((div, i) => {
-      div.textContent = q.answers[i];
-      div.className = 'answer-display';
-    });
-
-    document.getElementById('hostTimer').textContent = timeLeft;
-    document.getElementById('hostTimer').className = 'big-timer';
-
-    showScreen('questionScreen');
-
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      document.getElementById('hostTimer').textContent = timeLeft;
-      if (timeLeft <= 5) document.getElementById('hostTimer').className = 'big-timer urgent';
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        showResults();
-      }
-    }, 1000);
+  let level, msg, color;
+  if (pct >= 0.9) {
+    level = "🌟 عالم قرآني متميز"; color = "#ffd700";
+    msg = "ما شاء الله! إجاباتك تدل على فهم عميق لسورة لقمان والموعظة القرآنية. بارك الله فيك.";
+    launchConfetti();
+  } else if (pct >= 0.7) {
+    level = "📚 طالب علم متفوق"; color = "#2ecc71";
+    msg = "أحسنت! نتيجة ممتازة تعكس اهتمامك بكتاب الله. استمر في التعلم والتدبر.";
+  } else if (pct >= 0.5) {
+    level = "🌱 في طريق النمو"; color = "#3498db";
+    msg = "نتيجة جيدة! راجع الآيات الكريمة من سورة لقمان وستتحسن إجاباتك بإذن الله.";
+  } else {
+    level = "🔄 حاول مجدداً"; color = "#ff6b35";
+    msg = "لا بأس، كل بداية صعبة. اقرأ سورة لقمان وتدبر معانيها ثم حاول مرة أخرى.";
   }
 
-  window.showResults = function() {
-    clearInterval(timerInterval);
-    const q = questions[currentQIndex];
+  const levelEl = document.getElementById('resultLevel');
+  levelEl.textContent = level;
+  levelEl.style.background = color + '22';
+  levelEl.style.color = color;
+  levelEl.style.border = `1px solid ${color}44`;
 
-    // Highlight correct answer
-    const answerDivs = document.querySelectorAll('.answer-display');
-    answerDivs[q.correct].classList.add('correct-highlight');
+  document.getElementById('resultMsg').textContent = msg;
 
-    // Calculate scores
-    get(ref(db, 'players')).then(snap => {
-      if (!snap.exists()) return;
-      const players = Object.entries(snap.val())
-        .map(([k,v]) => ({...v, key: k}))
-        .sort((a,b) => b.score - a.score);
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  questions.forEach((q, i) => {
+    const ua = userAnswers[i];
+    const div = document.createElement('div');
+    div.className = 'review-item ' + (ua.correct ? 'ok' : 'bad');
+    div.innerHTML = `
+      <div class="review-q">${i+1}. ${q.text}</div>
+      <div class="review-a">إجابتك: ${ua.userIdx === -1 ? 'لم تجب' : q.answers[ua.userIdx]}</div>
+      ${!ua.correct ? `<div class="review-c">✓ الصحيحة: ${q.answers[ua.correctIdx]}</div>` : '<div class="review-c">✓ صحيحة!</div>'}
+    `;
+    reviewList.appendChild(div);
+  });
+}
 
-      // Update scores for correct answers
-      players.forEach(p => {
-        if (p.lastAnswer && p.lastAnswer.answerIndex === q.correct) {
-          const points = 100 + (p.lastAnswer.timeBonus || 0);
-          set(ref(db, `players/${p.key}/score`), (p.score || 0) + points);
-        }
-      });
+function restartGame() {
+  document.getElementById('resultScreen').classList.remove('active');
+  document.getElementById('introScreen').classList.add('active');
+}
 
-      // Show leaderboard
-      setTimeout(() => {
-        set(ref(db, 'game/status'), 'result');
-        showResultsScreen();
-      }, 1000);
-    });
-  };
-
-  function showResultsScreen() {
-    get(ref(db, 'players')).then(snap => {
-      if (!snap.exists()) return;
-      const players = Object.entries(snap.val())
-        .map(([k,v]) => ({...v}))
-        .sort((a,b) => b.score - a.score);
-
-      const medals = ['🥇','🥈','🥉'];
-      const grid = document.getElementById('resultsGrid');
-      grid.innerHTML = '';
-
-      players.slice(0, 6).forEach((p, i) => {
-        const card = document.createElement('div');
-        card.className = 'lb-card';
-        card.style.animationDelay = `${i * 0.08}s`;
-        card.innerHTML = `
-          <div class="lb-medal">${medals[i] || '🎯'}</div>
-          <div class="lb-name">${p.name}</div>
-          <div class="lb-score">${p.score}</div>
-        `;
-        grid.appendChild(card);
-      });
-
-      const isLast = currentQIndex >= questions.length - 1;
-      document.getElementById('continueBtn').textContent = isLast ? 'عرض النتائج النهائية 🏆' : 'السؤال التالي ←';
-
-      showScreen('resultsScreen');
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const pieces = [];
+  const colors = ['#ffd700','#ff6b35','#2ecc71','#3498db','#9b59b6','#e74c3c'];
+  for (let i = 0; i < 120; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: -10,
+      w: 8 + Math.random()*8,
+      h: 8 + Math.random()*8,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speed: 2 + Math.random()*4,
+      angle: Math.random()*360,
+      rot: (Math.random()-0.5)*6
     });
   }
-
-  window.nextQuestion = function() {
-    currentQIndex++;
-    if (currentQIndex >= questions.length) {
-      endGame();
-    } else {
-      showQuestion();
-    }
-  };
-
-  function endGame() {
-    set(ref(db, 'game/status'), 'leaderboard');
-    document.getElementById('statusText').textContent = 'انتهت المسابقة!';
-
-    get(ref(db, 'players')).then(snap => {
-      if (!snap.exists()) return;
-      const players = Object.entries(snap.val())
-        .map(([k,v]) => ({...v}))
-        .sort((a,b) => b.score - a.score);
-
-      const medals = ['🥇','🥈','🥉'];
-      const grid = document.getElementById('finalGrid');
-      grid.innerHTML = '';
-
-      players.forEach((p, i) => {
-        const card = document.createElement('div');
-        card.className = 'lb-card';
-        card.style.animationDelay = `${i * 0.1}s`;
-        card.innerHTML = `
-          <div class="lb-medal">${medals[i] || (i+1)}</div>
-          <div class="lb-name">${p.name}</div>
-          <div class="lb-score">${p.score} نقطة</div>
-        `;
-        grid.appendChild(card);
-      });
-
-      showScreen('finalScreen');
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      p.y += p.speed; p.angle += p.rot;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle * Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
     });
+    frame++;
+    if (frame < 200) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
-
-  window.resetGame = function() {
-    if (!confirm('هل تريد إعادة تعيين اللعبة؟ سيتم حذف جميع البيانات.')) return;
-    clearInterval(timerInterval);
-    currentQIndex = -1;
-    remove(ref(db, 'players'));
-    remove(ref(db, 'game'));
-    document.getElementById('statusText').textContent = 'في انتظار اللاعبين';
-    showScreen('lobbyScreen');
-  };
-
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
+  draw();
+}
 </script>
 </body>
 </html>
+
