@@ -3,833 +3,333 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لعبة القرآن - الموعظة في سورة لقمان</title>
+<title>مسابقة الموعظة من القرآن</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1b2a;--card:#112240;--accent:#ffd700;--green:#2ecc71;--red:#e74c3c;--text:#f0e8d0;}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,215,0,0.07) 0%,transparent 60%);pointer-events:none;}
+.wrap{width:100%;max-width:480px;position:relative;z-index:1;}
 
-  :root {
-    --bg: #1a0533;
-    --card: #2d1155;
-    --accent1: #ff6b35;
-    --accent2: #ffd700;
-    --green: #2ecc71;
-    --red: #e74c3c;
-    --blue: #3498db;
-    --purple: #9b59b6;
-    --text: #f0e6ff;
-    --glow: rgba(255, 215, 0, 0.4);
-  }
+/* JOIN */
+.join-card{background:var(--card);border:1px solid rgba(255,215,0,0.25);border-radius:20px;padding:32px 24px;text-align:center;}
+.join-logo{font-size:3rem;margin-bottom:12px;}
+.join-title{font-size:1.6rem;font-weight:900;color:var(--accent);margin-bottom:6px;}
+.join-sub{color:#8899aa;font-size:0.85rem;margin-bottom:28px;}
+.input-group{margin-bottom:14px;text-align:right;}
+.input-group label{display:block;font-size:0.85rem;color:#aaa;margin-bottom:6px;font-weight:600;}
+.inp{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:13px 16px;font-family:'Cairo',sans-serif;font-size:1rem;color:var(--text);outline:none;direction:rtl;}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,215,0,0.1);}
+.inp-code{text-align:center;letter-spacing:6px;font-size:1.3rem;font-weight:900;text-transform:uppercase;}
+.btn{width:100%;border:none;border-radius:10px;padding:14px;font-family:'Cairo',sans-serif;font-weight:900;font-size:1rem;cursor:pointer;transition:all 0.25s;}
+.btn-gold{background:linear-gradient(135deg,#c9a84c,#ffd700);color:#0d1b2a;}
+.btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,215,0,0.3);}
+.btn-gold:disabled{opacity:0.4;cursor:not-allowed;}
+.error-msg{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:10px;color:#f08080;font-size:0.85rem;margin-bottom:12px;display:none;}
 
-  body {
-    font-family: 'Cairo', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    overflow-x: hidden;
-  }
+/* WAITING */
+.wait-card{background:var(--card);border:1px solid rgba(255,215,0,0.2);border-radius:20px;padding:32px 24px;text-align:center;}
+.wait-name{font-size:1.4rem;font-weight:900;color:var(--accent);margin-bottom:8px;}
+.wait-msg{color:#8899aa;font-size:0.9rem;line-height:1.7;}
+.wait-spinner{width:50px;height:50px;border:4px solid rgba(255,215,0,0.15);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:20px auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 30% 20%, rgba(155,89,182,0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(255,107,53,0.1) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
+/* QUESTION */
+.q-card{background:var(--card);border:1px solid rgba(255,215,0,0.2);border-radius:20px;padding:20px;}
+.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.q-progress{font-size:0.8rem;color:#8899aa;font-weight:600;}
+.q-timer{font-size:1.4rem;font-weight:900;color:var(--accent);}
+.timer-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:50px;overflow:hidden;margin-bottom:16px;}
+.timer-fill{height:100%;background:linear-gradient(90deg,#c9a84c,#ffd700);transition:width 1s linear;}
+.q-cat{display:inline-block;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.25);border-radius:14px;padding:3px 10px;font-size:0.72rem;color:var(--accent);margin-bottom:8px;}
+.q-text{font-size:1.15rem;font-weight:700;line-height:1.8;margin-bottom:18px;text-align:center;}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ans-btn{border:none;border-radius:12px;padding:18px 12px;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;transition:all 0.2s;min-height:70px;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.4;}
+.ans-btn:active:not(:disabled){transform:scale(0.97);}
+.ans-btn.a0{background:linear-gradient(135deg,#c0392b,#922b21);color:white;}
+.ans-btn.a1{background:linear-gradient(135deg,#1a6fa8,#1258a0);color:white;}
+.ans-btn.a2{background:linear-gradient(135deg,#d68910,#b7770d);color:white;}
+.ans-btn.a3{background:linear-gradient(135deg,#1e8449,#196f3d);color:white;}
+.ans-btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-2px);}
+.ans-btn.selected-correct{background:linear-gradient(135deg,#27ae60,#1e8449)!important;box-shadow:0 0 20px rgba(46,204,113,0.5);transform:scale(1.03);}
+.ans-btn.selected-wrong{background:linear-gradient(135deg,#636363,#444)!important;opacity:0.7;}
+.ans-btn.reveal-correct{outline:3px solid var(--green);outline-offset:2px;}
+.ans-btn.dimmed{opacity:0.4;}
+.ans-shape{font-size:1.1rem;}
 
-  .container {
-    max-width: 800px;
-    width: 100%;
-    position: relative;
-    z-index: 1;
-  }
+/* FEEDBACK */
+.feedback-card{background:var(--card);border-radius:20px;padding:32px 24px;text-align:center;}
+.fb-icon{font-size:4rem;margin-bottom:12px;}
+.fb-title{font-size:1.6rem;font-weight:900;margin-bottom:8px;}
+.fb-points{font-size:1.1rem;color:#aaa;}
+.fb-correct-ans{margin-top:12px;padding:10px 16px;background:rgba(255,255,255,0.05);border-radius:10px;font-size:0.9rem;color:#ccc;}
 
-  /* ===== SCREENS ===== */
-  .screen { display: none; }
-  .screen.active { display: block; }
+/* RESULTS */
+.results-card{background:var(--card);border:1px solid rgba(255,215,0,0.25);border-radius:20px;padding:28px 24px;text-align:center;}
+.res-title{font-size:1.5rem;font-weight:900;color:var(--accent);margin-bottom:16px;}
+.score-circle{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#c9a84c,#ffd700);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 40px rgba(255,215,0,0.3);}
+.score-num{font-size:2.2rem;font-weight:900;color:#0d1b2a;line-height:1;}
+.score-lbl{font-size:0.75rem;color:rgba(13,27,42,0.7);}
+.rank-badge{display:inline-block;padding:8px 24px;border-radius:50px;font-weight:700;font-size:1rem;margin-bottom:12px;}
+.lb-mini{margin-top:16px;text-align:right;}
+.lb-mi-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,0.04);}
+.lb-mi-item:nth-child(1){background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.25);}
+.lb-mi-rank{font-weight:900;color:var(--accent);min-width:24px;}
+.lb-mi-name{flex:1;font-size:0.9rem;}
+.lb-mi-score{font-weight:900;color:var(--accent);font-size:0.9rem;}
 
-  /* ===== INTRO ===== */
-  .intro-card {
-    background: linear-gradient(135deg, #3d1a6e, #1a0533);
-    border: 2px solid var(--accent2);
-    border-radius: 24px;
-    padding: 50px 40px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(255,215,0,0.2), 0 0 120px rgba(155,89,182,0.1);
-  }
-
-  .bismillah {
-    font-family: 'Amiri', serif;
-    font-size: 2rem;
-    color: var(--accent2);
-    text-shadow: 0 0 20px var(--glow);
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-  }
-
-  .intro-title {
-    font-size: 2.8rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, #ffd700, #ff6b35);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.3;
-    margin-bottom: 10px;
-  }
-
-  .intro-sub {
-    font-size: 1.3rem;
-    color: #c9a8ff;
-    margin-bottom: 8px;
-  }
-
-  .intro-desc {
-    font-size: 1rem;
-    color: #9975cc;
-    margin-bottom: 40px;
-    line-height: 1.8;
-  }
-
-  .ayah-banner {
-    background: rgba(255,215,0,0.08);
-    border: 1px solid rgba(255,215,0,0.3);
-    border-radius: 12px;
-    padding: 18px 24px;
-    margin-bottom: 40px;
-    font-family: 'Amiri', serif;
-    font-size: 1.3rem;
-    color: #e8d5ff;
-    line-height: 2;
-  }
-
-  .ayah-ref {
-    font-size: 0.85rem;
-    color: var(--accent2);
-    margin-top: 8px;
-    font-family: 'Cairo', sans-serif;
-  }
-
-  .btn-start {
-    background: linear-gradient(135deg, #ff6b35, #e83e8c);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 18px 60px;
-    font-size: 1.5rem;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 8px 30px rgba(255,107,53,0.4);
-    letter-spacing: 1px;
-  }
-
-  .btn-start:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 40px rgba(255,107,53,0.6);
-  }
-
-  /* ===== QUESTION ===== */
-  .progress-bar-wrap {
-    background: rgba(255,255,255,0.1);
-    border-radius: 50px;
-    height: 8px;
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), var(--accent1));
-    border-radius: 50px;
-    transition: width 0.5s ease;
-  }
-
-  .q-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .q-counter {
-    background: rgba(255,215,0,0.15);
-    border: 1px solid rgba(255,215,0,0.4);
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 0.9rem;
-    color: var(--accent2);
-    font-weight: 700;
-  }
-
-  .score-badge {
-    background: rgba(46,204,113,0.15);
-    border: 1px solid rgba(46,204,113,0.4);
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 0.9rem;
-    color: var(--green);
-    font-weight: 700;
-  }
-
-  .timer-ring {
-    width: 70px;
-    height: 70px;
-    position: relative;
-    margin: 0 auto 20px;
-  }
-
-  .timer-ring svg {
-    transform: rotate(-90deg);
-  }
-
-  .timer-ring circle {
-    fill: none;
-    stroke-width: 5;
-  }
-
-  .timer-bg { stroke: rgba(255,255,255,0.1); }
-  .timer-fg {
-    stroke: var(--accent2);
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s linear, stroke 0.3s;
-  }
-
-  .timer-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--accent2);
-  }
-
-  .question-card {
-    background: linear-gradient(135deg, #3d1a6e, #2d0f55);
-    border: 2px solid rgba(255,215,0,0.3);
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 24px;
-    text-align: center;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-  }
-
-  .q-category {
-    font-size: 0.8rem;
-    color: #9975cc;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-
-  .question-text {
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1.8;
-    color: #f0e6ff;
-  }
-
-  .question-text.arabic-q {
-    font-family: 'Amiri', serif;
-    font-size: 1.6rem;
-    color: var(--accent2);
-  }
-
-  .answers-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  .ans-btn {
-    border: none;
-    border-radius: 16px;
-    padding: 20px 16px;
-    font-size: 1.05rem;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-align: center;
-    line-height: 1.5;
-    position: relative;
-    overflow: hidden;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .ans-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.1);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .ans-btn:hover:not(:disabled)::before { opacity: 1; }
-  .ans-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
-
-  .ans-btn[data-shape="triangle"] { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
-  .ans-btn[data-shape="diamond"]  { background: linear-gradient(135deg, #3498db, #1a6fa8); color: white; }
-  .ans-btn[data-shape="circle"]   { background: linear-gradient(135deg, #f39c12, #d68910); color: white; }
-  .ans-btn[data-shape="square"]   { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; }
-
-  .ans-btn.correct {
-    background: linear-gradient(135deg, #2ecc71, #1a8a4a) !important;
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(46,204,113,0.6);
-  }
-
-  .ans-btn.wrong {
-    background: linear-gradient(135deg, #636363, #444) !important;
-    opacity: 0.6;
-    transform: scale(0.97);
-  }
-
-  .ans-btn.shake {
-    animation: shake 0.4s ease;
-  }
-
-  .shape-icon {
-    font-size: 1.3rem;
-    margin-left: 8px;
-    display: inline-block;
-  }
-
-  /* ===== FEEDBACK ===== */
-  .feedback-overlay {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .feedback-overlay.show { opacity: 1; }
-
-  .feedback-box {
-    background: rgba(10,0,25,0.92);
-    border-radius: 20px;
-    padding: 30px 50px;
-    text-align: center;
-    border: 2px solid;
-    backdrop-filter: blur(10px);
-  }
-
-  .feedback-box.correct-fb { border-color: var(--green); box-shadow: 0 0 50px rgba(46,204,113,0.4); }
-  .feedback-box.wrong-fb  { border-color: var(--red);   box-shadow: 0 0 50px rgba(231,76,60,0.4); }
-
-  .feedback-emoji { font-size: 3rem; margin-bottom: 10px; }
-  .feedback-text  { font-size: 1.5rem; font-weight: 900; }
-  .feedback-answer { font-size: 0.95rem; color: #ccc; margin-top: 8px; }
-
-  /* ===== RESULT ===== */
-  .result-card {
-    background: linear-gradient(135deg, #3d1a6e, #1a0533);
-    border: 2px solid var(--accent2);
-    border-radius: 24px;
-    padding: 50px 40px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(255,215,0,0.2);
-  }
-
-  .result-title {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--accent2);
-    margin-bottom: 10px;
-  }
-
-  .result-score-circle {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ff6b35, #9b59b6);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 20px auto;
-    box-shadow: 0 0 50px rgba(255,107,53,0.4);
-  }
-
-  .result-score-num {
-    font-size: 3rem;
-    font-weight: 900;
-    color: white;
-    line-height: 1;
-  }
-
-  .result-score-max {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.7);
-  }
-
-  .result-level {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 16px 0;
-    padding: 10px 30px;
-    border-radius: 50px;
-    display: inline-block;
-  }
-
-  .result-msg { color: #c9a8ff; margin-bottom: 30px; line-height: 1.8; font-size: 1rem; }
-
-  .review-section {
-    margin-top: 30px;
-    text-align: right;
-  }
-
-  .review-title {
-    font-size: 1.1rem;
-    color: var(--accent2);
-    margin-bottom: 16px;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  .review-item {
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 10px;
-    border-right: 4px solid;
-    font-size: 0.9rem;
-    line-height: 1.7;
-  }
-
-  .review-item.ok  { border-color: var(--green); }
-  .review-item.bad { border-color: var(--red); }
-
-  .review-q  { font-weight: 700; color: #e0d0ff; margin-bottom: 4px; }
-  .review-a  { color: #aaa; }
-  .review-c  { color: var(--green); font-weight: 600; }
-
-  .confetti {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 200;
-  }
-
-  @keyframes confetti-fall {
-    0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-
-  .confetti-piece {
-    position: absolute;
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    animation: confetti-fall linear forwards;
-  }
-
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
-  }
-
-  @keyframes pop-in {
-    0%   { transform: scale(0.5); opacity: 0; }
-    70%  { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  .pop-in { animation: pop-in 0.4s ease forwards; }
-
-  @media (max-width: 600px) {
-    .answers-grid { grid-template-columns: 1fr; }
-    .intro-title { font-size: 1.9rem; }
-    .question-text { font-size: 1.15rem; }
-    .intro-card, .result-card { padding: 30px 20px; }
-  }
+.screen{display:none;}.screen.active{display:block;}
+@media(max-width:380px){.ans-grid{grid-template-columns:1fr}.ans-btn{min-height:55px}}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<!-- Feedback Overlay -->
-<div class="feedback-overlay" id="feedbackOverlay">
-  <div class="feedback-box" id="feedbackBox">
-    <div class="feedback-emoji" id="feedbackEmoji"></div>
-    <div class="feedback-text" id="feedbackText"></div>
-    <div class="feedback-answer" id="feedbackAnswer"></div>
+  <!-- JOIN -->
+  <div class="screen active" id="joinScreen">
+    <div class="join-card">
+      <div class="join-logo">📖</div>
+      <div class="join-title">مسابقة الموعظة</div>
+      <div class="join-sub">من القرآن الكريم — سورة لقمان</div>
+      <div class="error-msg" id="errMsg"></div>
+      <div class="input-group">
+        <label>رمز الغرفة</label>
+        <input class="inp inp-code" id="inpCode" placeholder="XXXXX" maxlength="5">
+      </div>
+      <div class="input-group">
+        <label>اسمك</label>
+        <input class="inp" id="inpName" placeholder="اكتب اسمك هنا" maxlength="20">
+      </div>
+      <button class="btn btn-gold" id="btnJoin">انضم للعبة ▶</button>
+    </div>
   </div>
-</div>
 
-<canvas class="confetti" id="confettiCanvas"></canvas>
-
-<div class="container">
-
-  <!-- INTRO -->
-  <div class="screen active" id="introScreen">
-    <div class="intro-card pop-in">
-      <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-      <div class="intro-title">الموعظة في سورة لقمان</div>
-      <div class="intro-sub">لعبة أسئلة تفاعلية</div>
-      <div class="intro-desc">
-        اختبر معلوماتك عن الموعظة القرآنية ومفاهيمها في سورة لقمان الكريمة<br>
-        10 أسئلة • 20 ثانية لكل سؤال
-      </div>
-      <div class="ayah-banner">
-        ﴿ يَا بُنَيَّ أَقِمِ الصَّلَاةَ وَأْمُرْ بِالْمَعْرُوفِ وَانْهَ عَنِ الْمُنكَرِ وَاصْبِرْ عَلَىٰ مَا أَصَابَكَ ﴾
-        <div class="ayah-ref">سورة لقمان • الآية 17</div>
-      </div>
-      <button class="btn-start" onclick="startGame()">▶ ابدأ اللعبة</button>
+  <!-- WAITING -->
+  <div class="screen" id="waitScreen">
+    <div class="wait-card">
+      <div class="join-logo">🌟</div>
+      <div class="wait-name" id="waitName"></div>
+      <div class="wait-spinner"></div>
+      <div class="wait-msg">انضممت بنجاح!<br>في انتظار المضيف ليبدأ اللعبة...</div>
     </div>
   </div>
 
   <!-- QUESTION -->
   <div class="screen" id="questionScreen">
-    <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-progress" id="qProg">1/15</div>
+        <div class="q-timer" id="qTimer">20</div>
+      </div>
+      <div class="timer-bar"><div class="timer-fill" id="qTimerFill" style="width:100%"></div></div>
+      <div style="text-align:center"><div class="q-cat" id="qCatP"></div></div>
+      <div class="q-text" id="qTextP"></div>
+      <div class="ans-grid" id="ansGrid"></div>
     </div>
-    <div class="q-header">
-      <div class="q-counter" id="qCounter">سؤال 1 / 10</div>
-      <div class="score-badge" id="scoreBadge">النقاط: 0</div>
-    </div>
-    <div class="timer-ring">
-      <svg width="70" height="70" viewBox="0 0 70 70">
-        <circle class="timer-bg" cx="35" cy="35" r="30"/>
-        <circle class="timer-fg" id="timerCircle" cx="35" cy="35" r="30"
-          stroke-dasharray="188.5" stroke-dashoffset="0"/>
-      </svg>
-      <div class="timer-text" id="timerText">20</div>
-    </div>
-    <div class="question-card">
-      <div class="q-category" id="qCategory">المفاهيم</div>
-      <div class="question-text" id="questionText"></div>
-    </div>
-    <div class="answers-grid" id="answersGrid"></div>
   </div>
 
-  <!-- RESULT -->
-  <div class="screen" id="resultScreen">
-    <div class="result-card pop-in">
-      <div class="result-title">🏆 انتهت اللعبة!</div>
-      <div class="result-score-circle">
-        <div class="result-score-num" id="finalScore">0</div>
-        <div class="result-score-max">من 1000</div>
+  <!-- FEEDBACK -->
+  <div class="screen" id="feedbackScreen">
+    <div class="feedback-card">
+      <div class="fb-icon" id="fbIcon"></div>
+      <div class="fb-title" id="fbTitle"></div>
+      <div class="fb-points" id="fbPoints"></div>
+      <div class="fb-correct-ans" id="fbCorrect"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="resultsScreen">
+    <div class="results-card">
+      <div class="res-title">🏆 انتهت المسابقة!</div>
+      <div class="score-circle">
+        <div class="score-num" id="myScore">0</div>
+        <div class="score-lbl">نقطة</div>
       </div>
-      <div class="result-level" id="resultLevel"></div>
-      <div class="result-msg" id="resultMsg"></div>
-      <button class="btn-start" onclick="restartGame()" style="font-size:1.1rem; padding:14px 40px;">
-        🔄 العب مرة أخرى
-      </button>
-      <div class="review-section">
-        <div class="review-title">📋 مراجعة الإجابات</div>
-        <div id="reviewList"></div>
-      </div>
+      <div class="rank-badge" id="rankBadge"></div>
+      <div class="lb-mini" id="lbMini"></div>
     </div>
   </div>
 
 </div>
 
 <script>
-const questions = [
-  {
-    category: "تعريف الموعظة",
-    text: "ما معنى كلمة \"الموعظة\" في اللغة العربية؟",
-    answers: ["التذكير بالخير مع الترغيب والترهيب", "الأمر بالمعروف فقط", "تلاوة القرآن الكريم", "الدعاء والتضرع لله"],
-    correct: 0,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "وصية لقمان",
-    text: "بماذا بدأ لقمان وصيته لابنه أولاً؟",
-    answers: ["إقامة الصلاة", "النهي عن الشرك بالله", "بر الوالدين", "الصدق في القول"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "آيات قرآنية",
-    text: "أكمل الآية: ﴿ يَا بُنَيَّ لَا تُشْرِكْ بِاللَّهِ ۖ إِنَّ الشِّرْكَ ...﴾",
-    answers: ["لَظُلْمٌ عَظِيمٌ", "لَكُفْرٌ مُبِينٌ", "لَذَنْبٌ كَبِيرٌ", "لَخَسَارَةٌ عَظِيمَةٌ"],
-    correct: 0,
-    shapes: ["triangle","diamond","circle","square"],
-    isArabic: true
-  },
-  {
-    category: "قيم الموعظة",
-    text: "ما الصفة التي أوصى بها لقمان ابنه عند مواجهة الأذى والصعاب؟",
-    answers: ["الانتقام", "الصبر", "الفرار", "الاستسلام"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "الأمر بالمعروف",
-    text: "ما العبادة التي أمر بها لقمان ابنه صراحةً في سورة لقمان؟",
-    answers: ["الزكاة", "الصيام", "إقامة الصلاة", "الحج"],
-    correct: 2,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "أخلاق الموعظة",
-    text: "نهى لقمان ابنه عن سلوك متكبر؛ ما هذا السلوك تحديداً؟",
-    answers: ["رفع الصوت عند الكلام", "تصعير الخد للناس والمشي مرحاً", "ترك الصلاة", "البخل بالمال"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "آيات قرآنية",
-    text: "وصف الله صوت الحمار بأنه أنكر الأصوات في سياق النهي عن ماذا؟",
-    answers: ["الكذب", "الغضب", "رفع الصوت والتكبر", "الغيبة"],
-    correct: 2,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "حكمة لقمان",
-    text: "من هو لقمان حسب أقوى الآراء عند المفسرين؟",
-    answers: ["نبي من الأنبياء", "رجل صالح حكيم أعطاه الله الحكمة", "ملك من ملوك اليمن", "صحابي جليل"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "مفاهيم الموعظة",
-    text: "تضمنت موعظة لقمان جانباً مهماً مع الوالدين؛ ما هو؟",
-    answers: ["طاعتهما في كل شيء حتى الشرك", "الشكر لهما وصحبتهما بالمعروف", "الابتعاد عنهما للعبادة", "إعطاؤهما المال فقط"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "تدبر الآيات",
-    text: "ماذا تعني الآية: ﴿إِنَّ اللَّهَ لَطِيفٌ خَبِيرٌ﴾ في سياق سورة لقمان؟",
-    answers: ["الله يعلم ما في الأرحام فقط", "الله لطيف بعباده لا يعلم السر", "الله مطلع على أدق التفاصيل ولو كانت مثقال حبة خردل", "الله يحاسب الناس في الدنيا فقط"],
-    correct: 2,
-    shapes: ["triangle","diamond","circle","square"]
-  }
-];
+firebase.initializeApp({databaseURL:"https://quran111-quizz-default-rtdb.firebaseio.com"});
+const db=firebase.database();
+const SHAPES=["▲","◆","●","■"];
 
-const SHAPES = { triangle: "▲", diamond: "◆", circle: "●", square: "■" };
-const COLORS = ["#e74c3c","#3498db","#f39c12","#27ae60"];
+let myId=null,myName='',roomCode=null,roomRef=null,myScore=0;
+let timerInt=null,timeLeft=20,selectedAnswer=null,currentQNum=0,totalQ=15;
 
-let currentQ = 0, score = 0, timerInterval, timeLeft = 20;
-let userAnswers = [];
+// Auto-fill room from URL
+const urlParams=new URLSearchParams(window.location.search);
+if(urlParams.get('room')) document.getElementById('inpCode').value=urlParams.get('room').toUpperCase();
 
-function startGame() {
-  currentQ = 0; score = 0; userAnswers = [];
-  document.getElementById('introScreen').classList.remove('active');
-  document.getElementById('questionScreen').classList.add('active');
-  showQuestion();
-}
+document.getElementById('btnJoin').onclick=joinRoom;
+document.getElementById('inpCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
+document.getElementById('inpName').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom();});
 
-function showQuestion() {
-  const q = questions[currentQ];
-  const total = questions.length;
+function showErr(msg){const e=document.getElementById('errMsg');e.textContent=msg;e.style.display='block';}
+function hideErr(){document.getElementById('errMsg').style.display='none';}
 
-  document.getElementById('progressBar').style.width = ((currentQ/total)*100)+'%';
-  document.getElementById('qCounter').textContent = `سؤال ${currentQ+1} / ${total}`;
-  document.getElementById('scoreBadge').textContent = `النقاط: ${score}`;
-  document.getElementById('qCategory').textContent = q.category;
+function joinRoom(){
+  const code=document.getElementById('inpCode').value.trim().toUpperCase();
+  const name=document.getElementById('inpName').value.trim();
+  if(!code||code.length<5){showErr('أدخل رمز الغرفة كاملاً');return;}
+  if(!name){showErr('أدخل اسمك');return;}
+  hideErr();
+  document.getElementById('btnJoin').disabled=true;
 
-  const qt = document.getElementById('questionText');
-  qt.textContent = q.text;
-  qt.className = 'question-text' + (q.isArabic ? ' arabic-q' : '');
-
-  const grid = document.getElementById('answersGrid');
-  grid.innerHTML = '';
-
-  q.answers.forEach((ans, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'ans-btn';
-    btn.dataset.shape = q.shapes[i];
-    btn.innerHTML = `<span class="shape-icon">${SHAPES[q.shapes[i]]}</span> ${ans}`;
-    btn.onclick = () => selectAnswer(i);
-    grid.appendChild(btn);
+  db.ref('rooms/'+code).once('value',snap=>{
+    if(!snap.exists()){showErr('رمز الغرفة غير صحيح');document.getElementById('btnJoin').disabled=false;return;}
+    const room=snap.val();
+    if(room.status!=='waiting'){showErr('اللعبة بدأت بالفعل');document.getElementById('btnJoin').disabled=false;return;}
+    
+    roomCode=code;myName=name;
+    myId='p_'+Date.now()+'_'+Math.random().toString(36).substring(2,5);
+    roomRef=db.ref('rooms/'+code);
+    
+    roomRef.child('players/'+myId).set({name,score:0,joinedAt:Date.now()});
+    document.getElementById('waitName').textContent='أهلاً '+name+' 👋';
+    document.getElementById('joinScreen').classList.remove('active');
+    document.getElementById('waitScreen').classList.add('active');
+    
+    listenToRoom();
   });
-
-  startTimer();
 }
 
-function startTimer() {
-  timeLeft = 20;
-  clearInterval(timerInterval);
-  updateTimerUI();
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerUI();
-    if (timeLeft <= 0) { clearInterval(timerInterval); timeOut(); }
-  }, 1000);
+function listenToRoom(){
+  roomRef.child('status').on('value',snap=>{
+    const s=snap.val();
+    if(s==='question') loadQuestion();
+    else if(s==='reveal') showReveal();
+    else if(s==='finished') showResults();
+  });
 }
 
-function updateTimerUI() {
-  const circumference = 188.5;
-  const offset = circumference * (1 - timeLeft/20);
-  const circle = document.getElementById('timerCircle');
-  const text = document.getElementById('timerText');
-  circle.style.strokeDashoffset = offset;
-  text.textContent = timeLeft;
-  circle.style.stroke = timeLeft > 10 ? '#ffd700' : timeLeft > 5 ? '#ff6b35' : '#e74c3c';
-  text.style.color    = timeLeft > 10 ? '#ffd700' : timeLeft > 5 ? '#ff6b35' : '#e74c3c';
+let lastQ=-1;
+function loadQuestion(){
+  roomRef.child('questionData').once('value',snap=>{
+    const q=snap.val();
+    if(!q)return;
+    roomRef.child('currentQ').once('value',csnap=>{
+      const qNum=csnap.val();
+      if(qNum===lastQ)return;
+      lastQ=qNum;
+      currentQNum=qNum;
+      selectedAnswer=null;
+      
+      document.getElementById('feedbackScreen').classList.remove('active');
+      document.getElementById('waitScreen').classList.remove('active');
+      document.getElementById('questionScreen').classList.add('active');
+      
+      document.getElementById('qProg').textContent=`${qNum+1}/${totalQ}`;
+      document.getElementById('qCatP').textContent=q.category;
+      document.getElementById('qTextP').textContent=q.text;
+      
+      const grid=document.getElementById('ansGrid');
+      grid.innerHTML=q.answers.map((a,i)=>`
+        <button class="ans-btn a${i}" onclick="selectAns(${i})" id="ansBtn${i}">
+          <span class="ans-shape">${SHAPES[i]}</span>${a}
+        </button>`).join('');
+      
+      startQTimer(q.timeLimit||20);
+    });
+  });
 }
 
-function selectAnswer(idx) {
-  clearInterval(timerInterval);
-  const q = questions[currentQ];
-  const btns = document.querySelectorAll('.ans-btn');
-  btns.forEach(b => b.disabled = true);
-
-  const isCorrect = idx === q.correct;
-  const points = isCorrect ? Math.round(50 + (timeLeft/20)*50) * 10 : 0;
-  if (isCorrect) score += points;
-
-  userAnswers.push({ correct: isCorrect, userIdx: idx, correctIdx: q.correct });
-
-  btns[idx].classList.add(isCorrect ? 'correct' : 'shake');
-  if (!isCorrect) btns[q.correct].classList.add('correct');
-  btns.forEach((b,i) => { if(i!==idx && i!==q.correct) b.classList.add('wrong'); });
-
-  showFeedback(isCorrect, q.answers[q.correct], points);
+function startQTimer(limit){
+  timeLeft=limit;clearInterval(timerInt);updateQTimer();
+  timerInt=setInterval(()=>{timeLeft--;updateQTimer();if(timeLeft<=0){clearInterval(timerInt);if(!selectedAnswer&&selectedAnswer!==0)timeOutQ();}},1000);
+}
+function updateQTimer(){
+  const t=document.getElementById('qTimer');
+  t.textContent=timeLeft;
+  t.style.color=timeLeft>10?'#ffd700':timeLeft>5?'#ff9b35':'#e74c3c';
+  document.getElementById('qTimerFill').style.width=(timeLeft/20*100)+'%';
+}
+function timeOutQ(){
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
 }
 
-function timeOut() {
-  const q = questions[currentQ];
-  const btns = document.querySelectorAll('.ans-btn');
-  btns.forEach(b => b.disabled = true);
-  btns[q.correct].classList.add('correct');
-  btns.forEach((b,i) => { if(i!==q.correct) b.classList.add('wrong'); });
-  userAnswers.push({ correct: false, userIdx: -1, correctIdx: q.correct });
-  showFeedback(false, q.answers[q.correct], 0, true);
+function selectAns(idx){
+  if(selectedAnswer!==null&&selectedAnswer!==undefined)return;
+  if(timeLeft<=0)return;
+  selectedAnswer=idx;
+  clearInterval(timerInt);
+  document.querySelectorAll('.ans-btn').forEach(b=>b.disabled=true);
+  document.getElementById('ansBtn'+idx).classList.add('selected-temp');
+  
+  const pts=Math.round(500+(timeLeft/20)*500);
+  roomRef.child('answers/'+myId).set({answer:idx,time:timeLeft,points:pts,name:myName});
 }
 
-function showFeedback(isCorrect, correctAns, points, timeout=false) {
-  const overlay = document.getElementById('feedbackOverlay');
-  const box = document.getElementById('feedbackBox');
-  const emoji = document.getElementById('feedbackEmoji');
-  const text = document.getElementById('feedbackText');
-  const answer = document.getElementById('feedbackAnswer');
-
-  box.className = 'feedback-box ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
-  emoji.textContent = timeout ? '⏰' : isCorrect ? '✅' : '❌';
-  text.textContent = timeout ? 'انتهى الوقت!' : isCorrect ? `رائع! +${points} نقطة` : 'إجابة خاطئة';
-  text.style.color = isCorrect ? '#2ecc71' : '#e74c3c';
-  answer.textContent = isCorrect ? '' : `الإجابة الصحيحة: ${correctAns}`;
-
-  overlay.classList.add('show');
-  setTimeout(() => {
-    overlay.classList.remove('show');
-    nextQuestion();
-  }, 1800);
+function showReveal(){
+  clearInterval(timerInt);
+  roomRef.child('correctAnswer').once('value',snap=>{
+    const correct=snap.val();
+    if(correct===null||correct===undefined)return;
+    
+    const isCorrect=selectedAnswer===correct;
+    const pts=isCorrect?Math.round(500+(timeLeft/20)*500):0;
+    
+    if(isCorrect){
+      myScore+=pts;
+      roomRef.child('scores/'+myId).transaction(cur=>(cur||0)+pts);
+    }
+    
+    document.getElementById('questionScreen').classList.remove('active');
+    document.getElementById('feedbackScreen').classList.add('active');
+    
+    document.getElementById('fbIcon').textContent=isCorrect?'✅':'❌';
+    document.getElementById('fbTitle').textContent=isCorrect?'إجابة صحيحة!':'إجابة خاطئة';
+    document.getElementById('fbTitle').style.color=isCorrect?'#2ecc71':'#e74c3c';
+    document.getElementById('fbPoints').textContent=isCorrect?`+${pts} نقطة | مجموعك: ${myScore}`:`مجموعك: ${myScore}`;
+    
+    if(!isCorrect){
+      roomRef.child('questionData/answers').once('value',as=>{
+        const answers=as.val();
+        if(answers) document.getElementById('fbCorrect').textContent='الإجابة الصحيحة: '+answers[correct];
+      });
+    } else {
+      document.getElementById('fbCorrect').textContent='';
+    }
+  });
 }
 
-function nextQuestion() {
-  currentQ++;
-  if (currentQ < questions.length) {
-    showQuestion();
-  } else {
-    showResults();
-  }
-}
-
-function showResults() {
+function showResults(){
+  document.getElementById('feedbackScreen').classList.remove('active');
+  document.getElementById('waitScreen').classList.remove('active');
   document.getElementById('questionScreen').classList.remove('active');
-  document.getElementById('resultScreen').classList.add('active');
-
-  const maxScore = questions.length * 1000;
-  const pct = score / maxScore;
-
-  document.getElementById('finalScore').textContent = score;
-
-  let level, msg, color;
-  if (pct >= 0.9) {
-    level = "🌟 عالم قرآني متميز"; color = "#ffd700";
-    msg = "ما شاء الله! إجاباتك تدل على فهم عميق لسورة لقمان والموعظة القرآنية. بارك الله فيك.";
-    launchConfetti();
-  } else if (pct >= 0.7) {
-    level = "📚 طالب علم متفوق"; color = "#2ecc71";
-    msg = "أحسنت! نتيجة ممتازة تعكس اهتمامك بكتاب الله. استمر في التعلم والتدبر.";
-  } else if (pct >= 0.5) {
-    level = "🌱 في طريق النمو"; color = "#3498db";
-    msg = "نتيجة جيدة! راجع الآيات الكريمة من سورة لقمان وستتحسن إجاباتك بإذن الله.";
-  } else {
-    level = "🔄 حاول مجدداً"; color = "#ff6b35";
-    msg = "لا بأس، كل بداية صعبة. اقرأ سورة لقمان وتدبر معانيها ثم حاول مرة أخرى.";
-  }
-
-  const levelEl = document.getElementById('resultLevel');
-  levelEl.textContent = level;
-  levelEl.style.background = color + '22';
-  levelEl.style.color = color;
-  levelEl.style.border = `1px solid ${color}44`;
-
-  document.getElementById('resultMsg').textContent = msg;
-
-  const reviewList = document.getElementById('reviewList');
-  reviewList.innerHTML = '';
-  questions.forEach((q, i) => {
-    const ua = userAnswers[i];
-    const div = document.createElement('div');
-    div.className = 'review-item ' + (ua.correct ? 'ok' : 'bad');
-    div.innerHTML = `
-      <div class="review-q">${i+1}. ${q.text}</div>
-      <div class="review-a">إجابتك: ${ua.userIdx === -1 ? 'لم تجب' : q.answers[ua.userIdx]}</div>
-      ${!ua.correct ? `<div class="review-c">✓ الصحيحة: ${q.answers[ua.correctIdx]}</div>` : '<div class="review-c">✓ صحيحة!</div>'}
-    `;
-    reviewList.appendChild(div);
+  document.getElementById('resultsScreen').classList.add('active');
+  
+  document.getElementById('myScore').textContent=myScore;
+  
+  roomRef.child('scores').once('value',snap=>{
+    const scores=snap.val()||{};
+    roomRef.child('players').once('value',psnap=>{
+      const pl=psnap.val()||{};
+      const sorted=Object.keys(pl).map(k=>({name:pl[k].name,score:scores[k]||0,isMe:k===myId})).sort((a,b)=>b.score-a.score);
+      const myRank=sorted.findIndex(p=>p.isMe)+1;
+      const medals=['🥇','🥈','🥉'];
+      const rankEl=document.getElementById('rankBadge');
+      rankEl.textContent=myRank<=3?`${medals[myRank-1]} المركز ${myRank}`:`المركز ${myRank} من ${sorted.length}`;
+      rankEl.style.background=myRank===1?'rgba(255,215,0,0.2)':myRank===2?'rgba(192,192,192,0.15)':'rgba(255,255,255,0.08)';
+      rankEl.style.border=`1px solid ${myRank===1?'rgba(255,215,0,0.4)':'rgba(255,255,255,0.15)'}`;
+      rankEl.style.color=myRank===1?'#ffd700':'#ccc';
+      
+      document.getElementById('lbMini').innerHTML='<div style="font-size:0.85rem;font-weight:700;color:#8899aa;margin-bottom:8px;text-align:center">🏅 ترتيب اللاعبين</div>'+
+        sorted.slice(0,5).map((p,i)=>`
+          <div class="lb-mi-item" style="${p.isMe?'border:1px solid rgba(255,215,0,0.4);background:rgba(255,215,0,0.1);':''}">
+            <div class="lb-mi-rank">${medals[i]||(i+1)}</div>
+            <div class="lb-mi-name">${p.name}${p.isMe?' (أنت)':''}</div>
+            <div class="lb-mi-score">${p.score}</div>
+          </div>`).join('');
+    });
   });
-}
-
-function restartGame() {
-  document.getElementById('resultScreen').classList.remove('active');
-  document.getElementById('introScreen').classList.add('active');
-}
-
-function launchConfetti() {
-  const canvas = document.getElementById('confettiCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const pieces = [];
-  const colors = ['#ffd700','#ff6b35','#2ecc71','#3498db','#9b59b6','#e74c3c'];
-  for (let i = 0; i < 120; i++) {
-    pieces.push({
-      x: Math.random() * canvas.width,
-      y: -10,
-      w: 8 + Math.random()*8,
-      h: 8 + Math.random()*8,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      speed: 2 + Math.random()*4,
-      angle: Math.random()*360,
-      rot: (Math.random()-0.5)*6
-    });
-  }
-  let frame = 0;
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pieces.forEach(p => {
-      p.y += p.speed; p.angle += p.rot;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle * Math.PI/180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      ctx.restore();
-    });
-    frame++;
-    if (frame < 200) requestAnimationFrame(draw);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
-  }
-  draw();
 }
 </script>
 </body>
