@@ -3,835 +3,265 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لعبة القرآن - الموعظة في سورة لقمان</title>
+<title>لوحة المضيف - الموعظة من القرآن</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #1a0533;
-    --card: #2d1155;
-    --accent1: #ff6b35;
-    --accent2: #ffd700;
-    --green: #2ecc71;
-    --red: #e74c3c;
-    --blue: #3498db;
-    --purple: #9b59b6;
-    --text: #f0e6ff;
-    --glow: rgba(255, 215, 0, 0.4);
-  }
-
-  body {
-    font-family: 'Cairo', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 30% 20%, rgba(155,89,182,0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(255,107,53,0.1) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    max-width: 800px;
-    width: 100%;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ===== SCREENS ===== */
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  /* ===== INTRO ===== */
-  .intro-card {
-    background: linear-gradient(135deg, #3d1a6e, #1a0533);
-    border: 2px solid var(--accent2);
-    border-radius: 24px;
-    padding: 50px 40px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(255,215,0,0.2), 0 0 120px rgba(155,89,182,0.1);
-  }
-
-  .bismillah {
-    font-family: 'Amiri', serif;
-    font-size: 2rem;
-    color: var(--accent2);
-    text-shadow: 0 0 20px var(--glow);
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-  }
-
-  .intro-title {
-    font-size: 2.8rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, #ffd700, #ff6b35);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.3;
-    margin-bottom: 10px;
-  }
-
-  .intro-sub {
-    font-size: 1.3rem;
-    color: #c9a8ff;
-    margin-bottom: 8px;
-  }
-
-  .intro-desc {
-    font-size: 1rem;
-    color: #9975cc;
-    margin-bottom: 40px;
-    line-height: 1.8;
-  }
-
-  .ayah-banner {
-    background: rgba(255,215,0,0.08);
-    border: 1px solid rgba(255,215,0,0.3);
-    border-radius: 12px;
-    padding: 18px 24px;
-    margin-bottom: 40px;
-    font-family: 'Amiri', serif;
-    font-size: 1.3rem;
-    color: #e8d5ff;
-    line-height: 2;
-  }
-
-  .ayah-ref {
-    font-size: 0.85rem;
-    color: var(--accent2);
-    margin-top: 8px;
-    font-family: 'Cairo', sans-serif;
-  }
-
-  .btn-start {
-    background: linear-gradient(135deg, #ff6b35, #e83e8c);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 18px 60px;
-    font-size: 1.5rem;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 8px 30px rgba(255,107,53,0.4);
-    letter-spacing: 1px;
-  }
-
-  .btn-start:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 40px rgba(255,107,53,0.6);
-  }
-
-  /* ===== QUESTION ===== */
-  .progress-bar-wrap {
-    background: rgba(255,255,255,0.1);
-    border-radius: 50px;
-    height: 8px;
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), var(--accent1));
-    border-radius: 50px;
-    transition: width 0.5s ease;
-  }
-
-  .q-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .q-counter {
-    background: rgba(255,215,0,0.15);
-    border: 1px solid rgba(255,215,0,0.4);
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 0.9rem;
-    color: var(--accent2);
-    font-weight: 700;
-  }
-
-  .score-badge {
-    background: rgba(46,204,113,0.15);
-    border: 1px solid rgba(46,204,113,0.4);
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 0.9rem;
-    color: var(--green);
-    font-weight: 700;
-  }
-
-  .timer-ring {
-    width: 70px;
-    height: 70px;
-    position: relative;
-    margin: 0 auto 20px;
-  }
-
-  .timer-ring svg {
-    transform: rotate(-90deg);
-  }
-
-  .timer-ring circle {
-    fill: none;
-    stroke-width: 5;
-  }
-
-  .timer-bg { stroke: rgba(255,255,255,0.1); }
-  .timer-fg {
-    stroke: var(--accent2);
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s linear, stroke 0.3s;
-  }
-
-  .timer-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--accent2);
-  }
-
-  .question-card {
-    background: linear-gradient(135deg, #3d1a6e, #2d0f55);
-    border: 2px solid rgba(255,215,0,0.3);
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 24px;
-    text-align: center;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-  }
-
-  .q-category {
-    font-size: 0.8rem;
-    color: #9975cc;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-
-  .question-text {
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1.8;
-    color: #f0e6ff;
-  }
-
-  .question-text.arabic-q {
-    font-family: 'Amiri', serif;
-    font-size: 1.6rem;
-    color: var(--accent2);
-  }
-
-  .answers-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  .ans-btn {
-    border: none;
-    border-radius: 16px;
-    padding: 20px 16px;
-    font-size: 1.05rem;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-align: center;
-    line-height: 1.5;
-    position: relative;
-    overflow: hidden;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .ans-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.1);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .ans-btn:hover:not(:disabled)::before { opacity: 1; }
-  .ans-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
-
-  .ans-btn[data-shape="triangle"] { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
-  .ans-btn[data-shape="diamond"]  { background: linear-gradient(135deg, #3498db, #1a6fa8); color: white; }
-  .ans-btn[data-shape="circle"]   { background: linear-gradient(135deg, #f39c12, #d68910); color: white; }
-  .ans-btn[data-shape="square"]   { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; }
-
-  .ans-btn.correct {
-    background: linear-gradient(135deg, #2ecc71, #1a8a4a) !important;
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(46,204,113,0.6);
-  }
-
-  .ans-btn.wrong {
-    background: linear-gradient(135deg, #636363, #444) !important;
-    opacity: 0.6;
-    transform: scale(0.97);
-  }
-
-  .ans-btn.shake {
-    animation: shake 0.4s ease;
-  }
-
-  .shape-icon {
-    font-size: 1.3rem;
-    margin-left: 8px;
-    display: inline-block;
-  }
-
-  /* ===== FEEDBACK ===== */
-  .feedback-overlay {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .feedback-overlay.show { opacity: 1; }
-
-  .feedback-box {
-    background: rgba(10,0,25,0.92);
-    border-radius: 20px;
-    padding: 30px 50px;
-    text-align: center;
-    border: 2px solid;
-    backdrop-filter: blur(10px);
-  }
-
-  .feedback-box.correct-fb { border-color: var(--green); box-shadow: 0 0 50px rgba(46,204,113,0.4); }
-  .feedback-box.wrong-fb  { border-color: var(--red);   box-shadow: 0 0 50px rgba(231,76,60,0.4); }
-
-  .feedback-emoji { font-size: 3rem; margin-bottom: 10px; }
-  .feedback-text  { font-size: 1.5rem; font-weight: 900; }
-  .feedback-answer { font-size: 0.95rem; color: #ccc; margin-top: 8px; }
-
-  /* ===== RESULT ===== */
-  .result-card {
-    background: linear-gradient(135deg, #3d1a6e, #1a0533);
-    border: 2px solid var(--accent2);
-    border-radius: 24px;
-    padding: 50px 40px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(255,215,0,0.2);
-  }
-
-  .result-title {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--accent2);
-    margin-bottom: 10px;
-  }
-
-  .result-score-circle {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ff6b35, #9b59b6);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 20px auto;
-    box-shadow: 0 0 50px rgba(255,107,53,0.4);
-  }
-
-  .result-score-num {
-    font-size: 3rem;
-    font-weight: 900;
-    color: white;
-    line-height: 1;
-  }
-
-  .result-score-max {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.7);
-  }
-
-  .result-level {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 16px 0;
-    padding: 10px 30px;
-    border-radius: 50px;
-    display: inline-block;
-  }
-
-  .result-msg { color: #c9a8ff; margin-bottom: 30px; line-height: 1.8; font-size: 1rem; }
-
-  .review-section {
-    margin-top: 30px;
-    text-align: right;
-  }
-
-  .review-title {
-    font-size: 1.1rem;
-    color: var(--accent2);
-    margin-bottom: 16px;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  .review-item {
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 10px;
-    border-right: 4px solid;
-    font-size: 0.9rem;
-    line-height: 1.7;
-  }
-
-  .review-item.ok  { border-color: var(--green); }
-  .review-item.bad { border-color: var(--red); }
-
-  .review-q  { font-weight: 700; color: #e0d0ff; margin-bottom: 4px; }
-  .review-a  { color: #aaa; }
-  .review-c  { color: var(--green); font-weight: 600; }
-
-  .confetti {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 200;
-  }
-
-  @keyframes confetti-fall {
-    0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-
-  .confetti-piece {
-    position: absolute;
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    animation: confetti-fall linear forwards;
-  }
-
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
-  }
-
-  @keyframes pop-in {
-    0%   { transform: scale(0.5); opacity: 0; }
-    70%  { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  .pop-in { animation: pop-in 0.4s ease forwards; }
-
-  @media (max-width: 600px) {
-    .answers-grid { grid-template-columns: 1fr; }
-    .intro-title { font-size: 1.9rem; }
-    .question-text { font-size: 1.15rem; }
-    .intro-card, .result-card { padding: 30px 20px; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a1628;--card:#0f2040;--accent:#c9a84c;--accent2:#e8c96e;--green:#2ecc71;--red:#e74c3c;--blue:#3498db;--text:#f0e8d0;--border:rgba(201,168,76,0.3);}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(201,168,76,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(52,152,219,0.06) 0%,transparent 50%);pointer-events:none;z-index:0;}
+.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1;}
+.header{text-align:center;margin-bottom:24px;}
+.header h1{font-size:1.8rem;font-weight:900;color:var(--accent2);text-shadow:0 0 20px rgba(201,168,76,0.4);}
+.header p{color:#8899aa;font-size:0.85rem;margin-top:4px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;}
+.card-title{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:16px;}
+.room-code-box{background:rgba(201,168,76,0.1);border:2px solid var(--accent);border-radius:14px;padding:18px;text-align:center;margin-bottom:16px;}
+.room-label{font-size:0.8rem;color:#8899aa;margin-bottom:6px;}
+.room-code{font-size:3rem;font-weight:900;color:var(--accent2);letter-spacing:8px;text-shadow:0 0 30px rgba(201,168,76,0.5);}
+.room-link{font-size:0.72rem;color:#6699aa;margin-top:6px;word-break:break-all;}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;min-height:60px;}
+.player-chip{background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.3);border-radius:8px;padding:8px;text-align:center;font-size:0.85rem;font-weight:600;color:#7dc7f0;}
+.player-chip.answered{background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:#7de8a0;}
+.no-players{color:#556677;font-size:0.85rem;text-align:center;padding:16px;grid-column:1/-1;}
+.btn{border:none;border-radius:10px;padding:13px 24px;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;transition:all 0.25s;width:100%;}
+.btn-gold{background:linear-gradient(135deg,#c9a84c,#e8c96e);color:#0a1628;}
+.btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,168,76,0.4);}
+.btn-gold:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-green{background:linear-gradient(135deg,#27ae60,#1e8449);color:white;}
+.btn-green:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(39,174,96,0.4);}
+.btn-gray{background:rgba(255,255,255,0.08);color:#aaa;margin-top:8px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.stat-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;text-align:center;}
+.stat-num{font-size:1.6rem;font-weight:900;color:var(--accent2);}
+.stat-label{font-size:0.72rem;color:#8899aa;margin-top:2px;}
+.timer-wrap{text-align:center;margin-bottom:14px;}
+.timer-big{font-size:3.5rem;font-weight:900;color:var(--accent2);line-height:1;}
+.timer-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:50px;overflow:hidden;margin-top:8px;}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s linear;}
+.q-box{background:rgba(201,168,76,0.06);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;text-align:center;}
+.q-cat{display:inline-block;background:rgba(201,168,76,0.15);border:1px solid var(--border);border-radius:16px;padding:3px 12px;font-size:0.75rem;color:var(--accent);margin-bottom:8px;}
+.q-num{font-size:0.75rem;color:#8899aa;margin-bottom:6px;}
+.q-text{font-size:1.2rem;font-weight:700;line-height:1.8;}
+.answers-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.ans-p{border-radius:8px;padding:10px 12px;font-size:0.85rem;font-weight:600;display:flex;align-items:center;gap:6px;}
+.ans-p.a0{background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.4);color:#f08080;}
+.ans-p.a1{background:rgba(52,152,219,0.2);border:1px solid rgba(52,152,219,0.4);color:#80c8f0;}
+.ans-p.a2{background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f0c878;}
+.ans-p.a3{background:rgba(39,174,96,0.2);border:1px solid rgba(39,174,96,0.3);color:#80e0a0;}
+.ans-p.correct-ans{outline:3px solid var(--green);outline-offset:2px;}
+.correct-reveal{font-size:1.1rem;font-weight:700;color:var(--green);padding:12px;background:rgba(46,204,113,0.1);border-radius:10px;text-align:center;margin-bottom:12px;}
+.lb-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:6px;}
+.lb-rank{font-size:1.1rem;font-weight:900;color:var(--accent);min-width:28px;}
+.lb-name{flex:1;font-weight:600;}
+.lb-score{font-weight:900;color:var(--accent2);}
+.lb-item:nth-child(1){background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);}
+.screen{display:none;}.screen.active{display:block;}
+.status{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;font-weight:600;}
+.status.waiting{background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.3);color:#7dc7f0;}
+.status.live{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);color:#f08080;}
+.dot{width:7px;height:7px;border-radius:50%;animation:pulse 1.5s infinite;}
+.dot.blue{background:#3498db;}.dot.red{background:#e74c3c;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@media(max-width:500px){.answers-grid{grid-template-columns:1fr}.room-code{font-size:2.2rem}}
 </style>
 </head>
 <body>
-
-<!-- Feedback Overlay -->
-<div class="feedback-overlay" id="feedbackOverlay">
-  <div class="feedback-box" id="feedbackBox">
-    <div class="feedback-emoji" id="feedbackEmoji"></div>
-    <div class="feedback-text" id="feedbackText"></div>
-    <div class="feedback-answer" id="feedbackAnswer"></div>
-  </div>
-</div>
-
-<canvas class="confetti" id="confettiCanvas"></canvas>
-
-<div class="container">
-
-  <!-- INTRO -->
-  <div class="screen active" id="introScreen">
-    <div class="intro-card pop-in">
-      <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-      <div class="intro-title">الموعظة في سورة لقمان</div>
-      <div class="intro-sub">لعبة أسئلة تفاعلية</div>
-      <div class="intro-desc">
-        اختبر معلوماتك عن الموعظة القرآنية ومفاهيمها في سورة لقمان الكريمة<br>
-        10 أسئلة • 20 ثانية لكل سؤال
-      </div>
-      <div class="ayah-banner">
-        ﴿ يَا بُنَيَّ أَقِمِ الصَّلَاةَ وَأْمُرْ بِالْمَعْرُوفِ وَانْهَ عَنِ الْمُنكَرِ وَاصْبِرْ عَلَىٰ مَا أَصَابَكَ ﴾
-        <div class="ayah-ref">سورة لقمان • الآية 17</div>
-      </div>
-      <button class="btn-start" onclick="startGame()">▶ ابدأ اللعبة</button>
-    </div>
+<div class="wrap">
+  <div class="header">
+    <h1>🎓 لوحة المضيف</h1>
+    <p>الموعظة من القرآن الكريم — سورة لقمان</p>
   </div>
 
-  <!-- QUESTION -->
-  <div class="screen" id="questionScreen">
-    <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progressBar" style="width:0%"></div>
-    </div>
-    <div class="q-header">
-      <div class="q-counter" id="qCounter">سؤال 1 / 10</div>
-      <div class="score-badge" id="scoreBadge">النقاط: 0</div>
-    </div>
-    <div class="timer-ring">
-      <svg width="70" height="70" viewBox="0 0 70 70">
-        <circle class="timer-bg" cx="35" cy="35" r="30"/>
-        <circle class="timer-fg" id="timerCircle" cx="35" cy="35" r="30"
-          stroke-dasharray="188.5" stroke-dashoffset="0"/>
-      </svg>
-      <div class="timer-text" id="timerText">20</div>
-    </div>
-    <div class="question-card">
-      <div class="q-category" id="qCategory">المفاهيم</div>
-      <div class="question-text" id="questionText"></div>
-    </div>
-    <div class="answers-grid" id="answersGrid"></div>
-  </div>
-
-  <!-- RESULT -->
-  <div class="screen" id="resultScreen">
-    <div class="result-card pop-in">
-      <div class="result-title">🏆 انتهت اللعبة!</div>
-      <div class="result-score-circle">
-        <div class="result-score-num" id="finalScore">0</div>
-        <div class="result-score-max">من 1000</div>
+  <!-- SETUP -->
+  <div class="screen active" id="setupScreen">
+    <div class="card">
+      <div class="card-title">🔑 رمز الغرفة</div>
+      <div class="room-code-box">
+        <div class="room-label">شارك هذا الرمز مع الطلاب ليدخلوا</div>
+        <div class="room-code" id="roomCodeDisplay">- - - - -</div>
+        <div class="room-link" id="roomLinkDisplay"></div>
       </div>
-      <div class="result-level" id="resultLevel"></div>
-      <div class="result-msg" id="resultMsg"></div>
-      <button class="btn-start" onclick="restartGame()" style="font-size:1.1rem; padding:14px 40px;">
-        🔄 العب مرة أخرى
-      </button>
-      <div class="review-section">
-        <div class="review-title">📋 مراجعة الإجابات</div>
-        <div id="reviewList"></div>
+      <button class="btn btn-gold" id="btnGenRoom">⚡ إنشاء غرفة جديدة</button>
+    </div>
+    <div class="card" id="waitingCard" style="display:none">
+      <div class="card-title">👥 الطلاب المنضمون (<span id="playerCount">0</span>)</div>
+      <div class="status waiting"><div class="dot blue"></div> في انتظار الطلاب...</div>
+      <div class="players-grid" id="playersGrid"><div class="no-players">لم ينضم أحد بعد</div></div>
+      <div style="margin-top:16px">
+        <button class="btn btn-gold" id="btnStart" disabled>▶ ابدأ اللعبة</button>
       </div>
     </div>
   </div>
 
+  <!-- GAME -->
+  <div class="screen" id="gameScreen">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="statQ">1</div><div class="stat-label">السؤال</div></div>
+      <div class="stat-box"><div class="stat-num" id="statAns">0</div><div class="stat-label">أجابوا</div></div>
+      <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">اللاعبون</div></div>
+    </div>
+    <div class="card">
+      <div class="timer-wrap">
+        <div class="timer-big" id="timerBig">20</div>
+        <div style="font-size:0.75rem;color:#8899aa;margin-top:4px;">ثانية</div>
+        <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+      </div>
+      <div class="q-box">
+        <div class="q-cat" id="qCat"></div>
+        <div class="q-num" id="qNum"></div>
+        <div class="q-text" id="qText"></div>
+      </div>
+      <div class="answers-grid" id="ansPrev"></div>
+      <div class="status live" id="liveStatus"><div class="dot red"></div> السؤال مباشر الآن</div>
+      <div class="players-grid" id="answeredGrid"></div>
+    </div>
+    <div id="revealCard" style="display:none">
+      <div class="card">
+        <div class="card-title">✅ الإجابة الصحيحة</div>
+        <div class="correct-reveal" id="correctReveal"></div>
+        <button class="btn btn-green" id="btnNext">التالي ◄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="resultsScreen">
+    <div class="card">
+      <div class="card-title">🏆 النتائج النهائية</div>
+      <div id="leaderboard"></div>
+      <button class="btn btn-gold" onclick="location.reload()" style="margin-top:16px">🔄 لعبة جديدة</button>
+    </div>
+  </div>
 </div>
 
 <script>
+firebase.initializeApp({databaseURL:"https://quran111-quizz-default-rtdb.firebaseio.com"});
+const db = firebase.database();
+const SHAPES = ["▲","◆","●","■"];
+
 const questions = [
-  {
-    category: "تعريف الموعظة",
-    text: "ما معنى كلمة \"الموعظة\" في اللغة العربية؟",
-    answers: ["التذكير بالخير مع الترغيب والترهيب", "الأمر بالمعروف فقط", "تلاوة القرآن الكريم", "الدعاء والتضرع لله"],
-    correct: 0,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "وصية لقمان",
-    text: "بماذا بدأ لقمان وصيته لابنه أولاً؟",
-    answers: ["إقامة الصلاة", "النهي عن الشرك بالله", "بر الوالدين", "الصدق في القول"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "آيات قرآنية",
-    text: "أكمل الآية: ﴿ يَا بُنَيَّ لَا تُشْرِكْ بِاللَّهِ ۖ إِنَّ الشِّرْكَ ...﴾",
-    answers: ["لَظُلْمٌ عَظِيمٌ", "لَكُفْرٌ مُبِينٌ", "لَذَنْبٌ كَبِيرٌ", "لَخَسَارَةٌ عَظِيمَةٌ"],
-    correct: 0,
-    shapes: ["triangle","diamond","circle","square"],
-    isArabic: true
-  },
-  {
-    category: "قيم الموعظة",
-    text: "ما الصفة التي أوصى بها لقمان ابنه عند مواجهة الأذى والصعاب؟",
-    answers: ["الانتقام", "الصبر", "الفرار", "الاستسلام"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "الأمر بالمعروف",
-    text: "ما العبادة التي أمر بها لقمان ابنه صراحةً في سورة لقمان؟",
-    answers: ["الزكاة", "الصيام", "إقامة الصلاة", "الحج"],
-    correct: 2,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "أخلاق الموعظة",
-    text: "نهى لقمان ابنه عن سلوك متكبر؛ ما هذا السلوك تحديداً؟",
-    answers: ["رفع الصوت عند الكلام", "تصعير الخد للناس والمشي مرحاً", "ترك الصلاة", "البخل بالمال"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "آيات قرآنية",
-    text: "وصف الله صوت الحمار بأنه أنكر الأصوات في سياق النهي عن ماذا؟",
-    answers: ["الكذب", "الغضب", "رفع الصوت والتكبر", "الغيبة"],
-    correct: 2,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "حكمة لقمان",
-    text: "من هو لقمان حسب أقوى الآراء عند المفسرين؟",
-    answers: ["نبي من الأنبياء", "رجل صالح حكيم أعطاه الله الحكمة", "ملك من ملوك اليمن", "صحابي جليل"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "مفاهيم الموعظة",
-    text: "تضمنت موعظة لقمان جانباً مهماً مع الوالدين؛ ما هو؟",
-    answers: ["طاعتهما في كل شيء حتى الشرك", "الشكر لهما وصحبتهما بالمعروف", "الابتعاد عنهما للعبادة", "إعطاؤهما المال فقط"],
-    correct: 1,
-    shapes: ["triangle","diamond","circle","square"]
-  },
-  {
-    category: "تدبر الآيات",
-    text: "ماذا تعني الآية: ﴿إِنَّ اللَّهَ لَطِيفٌ خَبِيرٌ﴾ في سياق سورة لقمان؟",
-    answers: ["الله يعلم ما في الأرحام فقط", "الله لطيف بعباده لا يعلم السر", "الله مطلع على أدق التفاصيل ولو كانت مثقال حبة خردل", "الله يحاسب الناس في الدنيا فقط"],
-    correct: 2,
-    shapes: ["triangle","diamond","circle","square"]
-  }
+  {category:"تعريف الموعظة",text:"من أين مأخوذة كلمة الموعظة لغةً؟",answers:["من الفعل وَعَظ","من الفعل عَظُمَ","من الفعل وَصَى","من الفعل نَصَحَ"],correct:0},
+  {category:"تعريف الموعظة",text:"ما معنى الموعظة اصطلاحاً؟",answers:["تلاوة القرآن فقط","تذكير الإنسان بما ينفعه وتحذيره مما يضره مع الترغيب والترهيب","الأمر بالمعروف فقط","الدعاء والتضرع"],correct:1},
+  {category:"الموعظة في القرآن",text:"في أي سورة: ﴿يا أيها الناس قد جاءتكم موعظة من ربكم وشفاء لما في الصدور﴾؟",answers:["سورة البقرة","سورة يونس آية 57","سورة النحل","سورة آل عمران"],correct:1},
+  {category:"أنواع الموعظة",text:"الموعظة التي تعرض قصص الأنبياء والأمم السابقة لأخذ العبرة تسمى:",answers:["الموعظة بالحكمة","الموعظة بالقصص","الموعظة بالترغيب","الموعظة بالجدال"],correct:1},
+  {category:"أنواع الموعظة",text:"الموعظة بالترغيب والترهيب تعني:",answers:["الوعد بالجنة فقط","التخويف من النار فقط","تحفيز النفس بذكر الجنة وتحذيرها بذكر النار","سرد القصص الدينية"],correct:2},
+  {category:"سورة لقمان — وصية 1",text:"ما أول وصية بدأ بها لقمان ابنه؟",answers:["بر الوالدين","الوصية بتوحيد الله والنهي عن الشرك","إقامة الصلاة","حسن الخلق"],correct:1},
+  {category:"سورة لقمان — وصية 1",text:"كيف وصف القرآن الشرك في سورة لقمان؟",answers:["ذنب كبير","خطأ فادح","ظلم عظيم","كفر مبين"],correct:2},
+  {category:"سورة لقمان — وصية 2",text:"ما الوصية الثانية في سورة لقمان؟",answers:["إقامة الصلاة","حسن الخلق","بر الوالدين","النهي عن الكبر"],correct:2},
+  {category:"سورة لقمان — وصية 2",text:"ما الحكمة من بر الوالدين كما في العارضة؟",answers:["لأنهما يملكان المال","اعتراف بالجميل ووفاء للعهد وسلوك طريق الفضل","لأن طاعتهما واجبة في كل شيء","لأن الأم هي الأهم فقط"],correct:1},
+  {category:"سورة لقمان — وصية 3",text:"الوصية الثالثة تشمل ثلاثة أمور، ما هي؟",answers:["الصيام والزكاة والحج","إقامة الصلاة والأمر بالمعروف والنهي عن المنكر والصبر","الصلاة والزكاة وبر الوالدين","التوحيد والصلاة والصوم"],correct:1},
+  {category:"سورة لقمان — وصية 3",text:"ما الذي وصف بأنه وقود الاستمرار في طريق الحق؟",answers:["العلم والمعرفة","المال والقوة","الصبر على الشدائد","الدعاء والتوكل"],correct:2},
+  {category:"سورة لقمان — وصية 4",text:"الوصية الرابعة هي الوصية بحسن الخلق، ما أبرز ما تضمنته؟",answers:["كثرة الصدقة","ترك الكبر والتعالي في التعامل مع الناس","الحرص على العبادة فقط","الابتعاد عن الناس"],correct:1},
+  {category:"سورة لقمان — وصية 4",text:"ما الذي يفتح القلوب ويجلب محبة الله حسب وصية لقمان الرابعة؟",answers:["كثرة الكلام","الثروة والمكانة","التواضع وترك الكبر","الصمت الدائم"],correct:2},
+  {category:"مقاصد الموعظة",text:"القرآن الكريم ليس مجرد نصيحة عابرة بل هو:",answers:["كتاب تاريخ وقصص","منهج رباني متكامل يهدف إلى إصلاح النفس وتزكيتها","مجموعة أوامر ونواهي فقط","كتاب للعبادة فقط"],correct:1},
+  {category:"خلاصة الدرس",text:"موعظة لقمان في السورة تهدف بشكل رئيسي إلى:",answers:["إثبات فضل لقمان","تكوين شخصية مؤمنة متكاملة في علاقتها بالله والناس والنفس","حفظ الآيات فقط","الترهيب من العقوبة فقط"],correct:1}
 ];
 
-const SHAPES = { triangle: "▲", diamond: "◆", circle: "●", square: "■" };
-const COLORS = ["#e74c3c","#3498db","#f39c12","#27ae60"];
+let roomCode=null,roomRef=null,currentQ=0,timerInt=null,timeLeft=20,players={},gamePhase='setup';
 
-let currentQ = 0, score = 0, timerInterval, timeLeft = 20;
-let userAnswers = [];
+document.getElementById('btnGenRoom').onclick=()=>{
+  roomCode=Math.random().toString(36).substring(2,7).toUpperCase();
+  document.getElementById('roomCodeDisplay').textContent=roomCode;
+  const base=window.location.href.replace('host.html','index.html');
+  document.getElementById('roomLinkDisplay').textContent=base+'?room='+roomCode;
+  roomRef=db.ref('rooms/'+roomCode);
+  roomRef.set({status:'waiting',currentQ:-1,players:{},createdAt:Date.now()});
+  document.getElementById('waitingCard').style.display='block';
+  document.getElementById('btnGenRoom').disabled=true;
+  roomRef.child('players').on('value',snap=>{
+    players=snap.val()||{};
+    const c=Object.keys(players).length;
+    document.getElementById('playerCount').textContent=c;
+    document.getElementById('statTotal').textContent=c;
+    renderPlayers();
+    document.getElementById('btnStart').disabled=c<1;
+  });
+};
 
-function startGame() {
-  currentQ = 0; score = 0; userAnswers = [];
-  document.getElementById('introScreen').classList.remove('active');
-  document.getElementById('questionScreen').classList.add('active');
-  showQuestion();
+function renderPlayers(){
+  const g=document.getElementById('playersGrid');
+  const k=Object.keys(players);
+  if(!k.length){g.innerHTML='<div class="no-players">لم ينضم أحد بعد</div>';return;}
+  g.innerHTML=k.map(id=>`<div class="player-chip">${players[id].name}</div>`).join('');
 }
 
-function showQuestion() {
-  const q = questions[currentQ];
-  const total = questions.length;
+document.getElementById('btnStart').onclick=()=>{
+  document.getElementById('setupScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  showQuestion();
+};
 
-  document.getElementById('progressBar').style.width = ((currentQ/total)*100)+'%';
-  document.getElementById('qCounter').textContent = `سؤال ${currentQ+1} / ${total}`;
-  document.getElementById('scoreBadge').textContent = `النقاط: ${score}`;
-  document.getElementById('qCategory').textContent = q.category;
-
-  const qt = document.getElementById('questionText');
-  qt.textContent = q.text;
-  qt.className = 'question-text' + (q.isArabic ? ' arabic-q' : '');
-
-  const grid = document.getElementById('answersGrid');
-  grid.innerHTML = '';
-
-  q.answers.forEach((ans, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'ans-btn';
-    btn.dataset.shape = q.shapes[i];
-    btn.innerHTML = `<span class="shape-icon">${SHAPES[q.shapes[i]]}</span> ${ans}`;
-    btn.onclick = () => selectAnswer(i);
-    grid.appendChild(btn);
+function showQuestion(){
+  gamePhase='question';
+  const q=questions[currentQ];
+  document.getElementById('revealCard').style.display='none';
+  document.getElementById('liveStatus').style.display='flex';
+  document.getElementById('statQ').textContent=`${currentQ+1}/${questions.length}`;
+  document.getElementById('statAns').textContent='0';
+  document.getElementById('qCat').textContent=q.category;
+  document.getElementById('qNum').textContent=`السؤال ${currentQ+1} من ${questions.length}`;
+  document.getElementById('qText').textContent=q.text;
+  document.getElementById('ansPrev').innerHTML=q.answers.map((a,i)=>
+    `<div class="ans-p a${i}${i===q.correct?' correct-ans':''}"><span>${SHAPES[i]}</span>${a}</div>`).join('');
+  document.getElementById('answeredGrid').innerHTML='';
+  roomRef.update({status:'question',currentQ,questionData:{text:q.text,category:q.category,answers:q.answers,timeLimit:20},answers:null});
+  roomRef.child('answers').on('value',snap=>{
+    if(gamePhase!=='question')return;
+    const ans=snap.val()||{};
+    document.getElementById('statAns').textContent=Object.keys(ans).length;
+    const g=document.getElementById('answeredGrid');
+    g.innerHTML=Object.keys(players).map(k=>{
+      const done=ans&&ans[k];
+      return`<div class="player-chip${done?' answered':''}">${players[k].name}${done?' ✓':''}</div>`;
+    }).join('');
   });
-
   startTimer();
 }
 
-function startTimer() {
-  timeLeft = 20;
-  clearInterval(timerInterval);
-  updateTimerUI();
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerUI();
-    if (timeLeft <= 0) { clearInterval(timerInterval); timeOut(); }
-  }, 1000);
+function startTimer(){
+  timeLeft=20;clearInterval(timerInt);updateTimer();
+  timerInt=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInt);revealAnswer();}},1000);
 }
-
-function updateTimerUI() {
-  const circumference = 188.5;
-  const offset = circumference * (1 - timeLeft/20);
-  const circle = document.getElementById('timerCircle');
-  const text = document.getElementById('timerText');
-  circle.style.strokeDashoffset = offset;
-  text.textContent = timeLeft;
-  circle.style.stroke = timeLeft > 10 ? '#ffd700' : timeLeft > 5 ? '#ff6b35' : '#e74c3c';
-  text.style.color    = timeLeft > 10 ? '#ffd700' : timeLeft > 5 ? '#ff6b35' : '#e74c3c';
+function updateTimer(){
+  const t=document.getElementById('timerBig');
+  t.textContent=timeLeft;
+  t.style.color=timeLeft>10?'#e8c96e':timeLeft>5?'#ff9b35':'#e74c3c';
+  document.getElementById('timerFill').style.width=(timeLeft/20*100)+'%';
 }
-
-function selectAnswer(idx) {
-  clearInterval(timerInterval);
-  const q = questions[currentQ];
-  const btns = document.querySelectorAll('.ans-btn');
-  btns.forEach(b => b.disabled = true);
-
-  const isCorrect = idx === q.correct;
-  const points = isCorrect ? Math.round(50 + (timeLeft/20)*50) * 10 : 0;
-  if (isCorrect) score += points;
-
-  userAnswers.push({ correct: isCorrect, userIdx: idx, correctIdx: q.correct });
-
-  btns[idx].classList.add(isCorrect ? 'correct' : 'shake');
-  if (!isCorrect) btns[q.correct].classList.add('correct');
-  btns.forEach((b,i) => { if(i!==idx && i!==q.correct) b.classList.add('wrong'); });
-
-  showFeedback(isCorrect, q.answers[q.correct], points);
+function revealAnswer(){
+  gamePhase='reveal';clearInterval(timerInt);
+  roomRef.child('answers').off();
+  roomRef.update({status:'reveal',correctAnswer:questions[currentQ].correct});
+  document.getElementById('liveStatus').style.display='none';
+  document.getElementById('revealCard').style.display='block';
+  const q=questions[currentQ];
+  document.getElementById('correctReveal').textContent=`${SHAPES[q.correct]}  ${q.answers[q.correct]}`;
 }
-
-function timeOut() {
-  const q = questions[currentQ];
-  const btns = document.querySelectorAll('.ans-btn');
-  btns.forEach(b => b.disabled = true);
-  btns[q.correct].classList.add('correct');
-  btns.forEach((b,i) => { if(i!==q.correct) b.classList.add('wrong'); });
-  userAnswers.push({ correct: false, userIdx: -1, correctIdx: q.correct });
-  showFeedback(false, q.answers[q.correct], 0, true);
-}
-
-function showFeedback(isCorrect, correctAns, points, timeout=false) {
-  const overlay = document.getElementById('feedbackOverlay');
-  const box = document.getElementById('feedbackBox');
-  const emoji = document.getElementById('feedbackEmoji');
-  const text = document.getElementById('feedbackText');
-  const answer = document.getElementById('feedbackAnswer');
-
-  box.className = 'feedback-box ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
-  emoji.textContent = timeout ? '⏰' : isCorrect ? '✅' : '❌';
-  text.textContent = timeout ? 'انتهى الوقت!' : isCorrect ? `رائع! +${points} نقطة` : 'إجابة خاطئة';
-  text.style.color = isCorrect ? '#2ecc71' : '#e74c3c';
-  answer.textContent = isCorrect ? '' : `الإجابة الصحيحة: ${correctAns}`;
-
-  overlay.classList.add('show');
-  setTimeout(() => {
-    overlay.classList.remove('show');
-    nextQuestion();
-  }, 1800);
-}
-
-function nextQuestion() {
+document.getElementById('btnNext').onclick=()=>{
   currentQ++;
-  if (currentQ < questions.length) {
-    showQuestion();
-  } else {
-    showResults();
-  }
-}
-
-function showResults() {
-  document.getElementById('questionScreen').classList.remove('active');
-  document.getElementById('resultScreen').classList.add('active');
-
-  const maxScore = questions.length * 1000;
-  const pct = score / maxScore;
-
-  document.getElementById('finalScore').textContent = score;
-
-  let level, msg, color;
-  if (pct >= 0.9) {
-    level = "🌟 عالم قرآني متميز"; color = "#ffd700";
-    msg = "ما شاء الله! إجاباتك تدل على فهم عميق لسورة لقمان والموعظة القرآنية. بارك الله فيك.";
-    launchConfetti();
-  } else if (pct >= 0.7) {
-    level = "📚 طالب علم متفوق"; color = "#2ecc71";
-    msg = "أحسنت! نتيجة ممتازة تعكس اهتمامك بكتاب الله. استمر في التعلم والتدبر.";
-  } else if (pct >= 0.5) {
-    level = "🌱 في طريق النمو"; color = "#3498db";
-    msg = "نتيجة جيدة! راجع الآيات الكريمة من سورة لقمان وستتحسن إجاباتك بإذن الله.";
-  } else {
-    level = "🔄 حاول مجدداً"; color = "#ff6b35";
-    msg = "لا بأس، كل بداية صعبة. اقرأ سورة لقمان وتدبر معانيها ثم حاول مرة أخرى.";
-  }
-
-  const levelEl = document.getElementById('resultLevel');
-  levelEl.textContent = level;
-  levelEl.style.background = color + '22';
-  levelEl.style.color = color;
-  levelEl.style.border = `1px solid ${color}44`;
-
-  document.getElementById('resultMsg').textContent = msg;
-
-  const reviewList = document.getElementById('reviewList');
-  reviewList.innerHTML = '';
-  questions.forEach((q, i) => {
-    const ua = userAnswers[i];
-    const div = document.createElement('div');
-    div.className = 'review-item ' + (ua.correct ? 'ok' : 'bad');
-    div.innerHTML = `
-      <div class="review-q">${i+1}. ${q.text}</div>
-      <div class="review-a">إجابتك: ${ua.userIdx === -1 ? 'لم تجب' : q.answers[ua.userIdx]}</div>
-      ${!ua.correct ? `<div class="review-c">✓ الصحيحة: ${q.answers[ua.correctIdx]}</div>` : '<div class="review-c">✓ صحيحة!</div>'}
-    `;
-    reviewList.appendChild(div);
+  if(currentQ>=questions.length)showResults();
+  else showQuestion();
+};
+function showResults(){
+  gamePhase='results';
+  roomRef.update({status:'finished'});
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('resultsScreen').classList.add('active');
+  roomRef.child('scores').once('value',snap=>{
+    const sc=snap.val()||{};
+    const sorted=Object.keys(players).map(k=>({name:players[k].name,score:sc[k]||0})).sort((a,b)=>b.score-a.score);
+    const medals=['🥇','🥈','🥉'];
+    document.getElementById('leaderboard').innerHTML=sorted.map((p,i)=>`
+      <div class="lb-item">
+        <div class="lb-rank">${medals[i]||(i+1)}</div>
+        <div class="lb-name">${p.name}</div>
+        <div class="lb-score">${p.score} نقطة</div>
+      </div>`).join('');
   });
-}
-
-function restartGame() {
-  document.getElementById('resultScreen').classList.remove('active');
-  document.getElementById('introScreen').classList.add('active');
-}
-
-function launchConfetti() {
-  const canvas = document.getElementById('confettiCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const pieces = [];
-  const colors = ['#ffd700','#ff6b35','#2ecc71','#3498db','#9b59b6','#e74c3c'];
-  for (let i = 0; i < 120; i++) {
-    pieces.push({
-      x: Math.random() * canvas.width,
-      y: -10,
-      w: 8 + Math.random()*8,
-      h: 8 + Math.random()*8,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      speed: 2 + Math.random()*4,
-      angle: Math.random()*360,
-      rot: (Math.random()-0.5)*6
-    });
-  }
-  let frame = 0;
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pieces.forEach(p => {
-      p.y += p.speed; p.angle += p.rot;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle * Math.PI/180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      ctx.restore();
-    });
-    frame++;
-    if (frame < 200) requestAnimationFrame(draw);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
-  }
-  draw();
 }
 </script>
 </body>
 </html>
-
