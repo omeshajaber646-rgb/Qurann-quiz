@@ -2,60 +2,47 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>أوميجا كويز - لاعب</title>
 <style>
   :root { --gold: #d4af37; --navy: #0a192f; }
-  body { margin:0; background: var(--navy); color:white; font-family: sans-serif; text-align:center; overflow:hidden; }
+  body { margin:0; background: var(--navy); color:white; font-family: sans-serif; text-align:center; }
+  .screen { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; height:60vh; }
+  .pad { border:none; border-radius:20px; font-size:3rem; color:white; }
   
-  /* شاشات الدخول والانتظار */
-  .screen { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:var(--navy); z-index:100; }
-  .card { background: rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--gold); width:100%; max-width:400px; }
-  input { width:100%; padding:15px; margin:10px 0; border-radius:10px; border:1px solid var(--gold); background:#1a2a4a; color:white; }
-  button { width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer; }
-
-  /* شاشة السرقة */
-  #stealScreen { position:fixed; inset:0; background:#ff0000; z-index:5000; display:none; align-items:center; justify-content:center; font-size:3rem; font-weight:900; animation: flash 0.3s infinite; }
-  @keyframes flash { 0%, 100% { opacity:1; } 50% { opacity:0.5; } }
-
-  /* شبكة اللعب */
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; height:80vh; padding:10px; }
-  .pad { border:none; border-radius:20px; font-size:3.5rem; color:white; }
-  .locked { opacity:0.3; pointer-events:none; }
+  /* لوحة المتصدرين عند اللاعب */
+  #lbOverlay { display:none; background: rgba(10,25,47,0.95); position:fixed; inset:0; z-index:1000; padding:20px; }
+  .lb-card { background: rgba(255,255,255,0.05); border: 2px solid var(--gold); border-radius:20px; padding:20px; }
+  .steal-msg { background: var(--wine); color: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; animation: bounce 1s; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 </style>
 </head>
 <body>
 
 <div id="loginScreen" class="screen">
-  <div class="card">
-    <h2 style="color:var(--gold)">OMEGA QUIZ 👑</h2>
-    <input type="text" id="roomInput" placeholder="أدخل كود الغرفة">
-    <input type="text" id="nameInput" placeholder="أدخل اسمك">
-    <button onclick="joinRoom()">انضم الآن</button>
+  <h2 style="color:var(--gold)">أهلاً بك في تحدي أوميجا 👑</h2>
+  <input type="text" id="roomInput" placeholder="كود الغرفة (من محمد جابر)" style="width:80%; padding:15px; margin:10px; border-radius:10px;">
+  <input type="text" id="nameInput" placeholder="اسمك الكريم" style="width:80%; padding:15px; margin:10px; border-radius:10px;">
+  <button onclick="join()" style="width:80%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold;">دخول</button>
+</div>
+
+<div id="lbOverlay" class="screen">
+  <div class="lb-card" style="width:90%;">
+    <div id="stealNotification"></div>
+    <h2 style="color:var(--gold)">لوحة المتصدرين الحالية 🏆</h2>
+    <div id="fullLb"></div>
+    <p style="margin-top:20px; opacity:0.7;">انتظر السؤال التالي من محمد...</p>
   </div>
 </div>
 
-<div id="waitScreen" class="screen" style="display:none">
-  <div class="card">
-    <h2 style="color:var(--gold)">تم الدخول! ✅</h2>
-    <div style="text-align:right; font-size:0.9rem; margin:15px 0;">
-      <p>• انتظر بدء اللعبة من محمد جابر.</p>
-      <p>• عند وميض الشاشة باللون الأحمر، اضغط للسرقة!</p>
-      <p>• أجب بسرعة لتحصل على نقاط أعلى.</p>
-    </div>
-    <p style="animation: pulse 1s infinite">بانتظار الهوست للبدء... ⏳</p>
-  </div>
-</div>
-
-<div id="stealScreen" onclick="performSteal()">🥷 اسررررق!</div>
-
-<div id="gameUI" style="display:none">
-  <div style="padding:10px; color:var(--gold); font-weight:bold;">النقاط: <span id="scoreVal">0</span></div>
-  <div class="grid" id="mainGrid">
-    <button class="pad" style="background:#e91e63" onclick="ans(0)">▲</button>
-    <button class="pad" style="background:#2196f3" onclick="ans(1)">◆</button>
-    <button class="pad" style="background:#4caf50" onclick="ans(2)">●</button>
-    <button class="pad" style="background:#ffeb3b" onclick="ans(3)">■</button>
+<div id="gameUI" style="display:none; padding:20px;">
+  <h3 id="pName">اللاعب: </h3>
+  <div class="grid">
+    <button class="pad" style="background:#e91e63" onclick="send(0)">▲</button>
+    <button class="pad" style="background:#2196f3" onclick="send(1)">◆</button>
+    <button class="pad" style="background:#4caf50" onclick="send(2)">●</button>
+    <button class="pad" style="background:#ffeb3b" onclick="send(3)">■</button>
   </div>
 </div>
 
@@ -63,51 +50,54 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
   import { getDatabase, ref, set, onValue, update, increment } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-  const firebaseConfig = { /* ضع نفس بيانات الهوست هنا */ };
+  const firebaseConfig = { /* نفس بيانات الهوست */ };
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  let myID, myRoom, myName, myScore = 0;
+  let myRoom, myID, myName;
 
-  window.joinRoom = function() {
+  window.join = function() {
     myRoom = document.getElementById('roomInput').value;
     myName = document.getElementById('nameInput').value;
-    if(!myRoom || !myName) return alert("أكمل البيانات");
-
-    myID = "p_" + Math.floor(Math.random()*9999);
-    set(ref(db, `rooms/${myRoom}/players/${myID}`), { name: myName, score: 0 });
+    myID = "p_" + Math.random().toString(36).substr(2, 5);
     
+    set(ref(db, `rooms/${myRoom}/players/${myID}`), { name: myName, score: 0 });
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('waitScreen').style.display = 'flex';
+    document.getElementById('gameUI').style.display = 'block';
+    document.getElementById('pName').innerText = "اللاعب: " + myName;
 
-    onValue(ref(db, `rooms/${myRoom}/state`), (s) => {
-      const state = s.val();
+    // مراقبة حالة الغرفة
+    onValue(ref(db, `rooms/${myRoom}/state`), (snap) => {
+      const state = snap.val();
       if(!state) return;
-      
-      // التزامن مع الهوست
-      if(state.status === "playing") {
-        document.getElementById('waitScreen').style.display = 'none';
-        document.getElementById('gameUI').style.display = 'block';
-        document.getElementById('mainGrid').classList.remove('locked');
+
+      // إظهار/إخفاء لوحة المتصدرين للجميع
+      if(state.showLeaderboard) {
+        document.getElementById('lbOverlay').style.display = 'flex';
+      } else {
+        document.getElementById('lbOverlay').style.display = 'none';
       }
-      
-      // وضع السرقة
-      document.getElementById('stealScreen').style.display = (state.event === "steal_active") ? "flex" : "none";
+
+      // عرض رسائل السرقة
+      if(state.lastSteal) {
+        document.getElementById('stealNotification').innerHTML = `<div class="steal-msg">${state.lastSteal.msg}</div>`;
+      }
+    });
+
+    // تحديث المتصدرين في شاشة اللاعب
+    onValue(ref(db, `rooms/${myRoom}/players`), (snap) => {
+      const players = Object.values(snap.val() || {}).sort((a,b) => b.score - a.score);
+      document.getElementById('fullLb').innerHTML = players.slice(0, 5).map(p => `
+        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #444;">
+          <span>${p.name}</span><b>${p.score}</b>
+        </div>
+      `).join('');
     });
   };
 
-  window.ans = function(id) {
-    myScore += 1000;
-    document.getElementById('scoreVal').innerText = myScore;
-    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: myScore });
-    document.getElementById('mainGrid').classList.add('locked');
-  };
-
-  window.performSteal = function() {
-    myScore += 2000;
-    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: myScore });
-    set(ref(db, `rooms/${myRoom}/logs`), { msg: `🥷 خطير! ${myName} سرق 2000 نقطة!` });
-    document.getElementById('stealScreen').style.display = "none";
+  window.send = function(id) {
+    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: increment(1000) });
+    alert("تم استلام إجابتك!");
   };
 </script>
 </body>
