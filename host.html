@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>👑 أوميجا - تحكم محمد وبهاء</title>
+    <title>👑 أوميجا - الإدارة السحابية</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #d4af37; --navy: #0a192f; }
@@ -10,9 +10,9 @@
         .sidebar { width: 350px; background: rgba(0,0,0,0.5); border-left: 2px solid var(--gold); padding: 20px; overflow-y: auto; }
         .main { flex: 1; padding: 30px; }
         .card { background: rgba(255,255,255,0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-bottom: 15px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--gold); background: #1a1a2e; color: #fff; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: var(--gold); color: var(--navy); margin-top: 10px; }
-        .q-item { background: rgba(255,255,255,0.03); padding: 10px; margin-bottom: 10px; border-radius: 8px; border-right: 3px solid var(--gold); }
+        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--gold); background: #1a1a2e; color: #fff; }
+        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: bold; margin-top: 10px; }
+        .q-item { background: rgba(255,255,255,0.03); padding: 10px; margin-bottom: 10px; border-radius: 8px; border-right: 4px solid var(--gold); }
     </style>
 </head>
 <body>
@@ -20,36 +20,28 @@
 <div class="sidebar">
     <h2 style="color:var(--gold); text-align:center;">بنك الأسئلة المشترك ☁️</h2>
     <div class="card">
-        <input type="text" id="newQ" placeholder="اكتب السؤال هنا...">
+        <input type="text" id="newQ" placeholder="السؤال...">
         <input type="text" id="opt0" placeholder="الجواب الصح ✅">
-        <input type="text" id="opt1" placeholder="خيار خطأ 1">
-        <input type="text" id="opt2" placeholder="خيار خطأ 2">
-        <input type="text" id="opt3" placeholder="خيار خطأ 3">
-        <button class="btn" onclick="saveToCloud()">💾 حفظ السؤال للكل</button>
+        <input type="text" id="opt1" placeholder="خطأ 1">
+        <input type="text" id="opt2" placeholder="خطأ 2">
+        <input type="text" id="opt3" placeholder="خطأ 3">
+        <button class="btn" onclick="saveToFirebase()">💾 حفظ دائم (للكل)</button>
     </div>
-    <div id="list">جاري تحميل الأسئلة...</div>
+    <div id="questionsList">جاري المزامنة...</div>
 </div>
 
 <div class="main">
     <div class="card">
-        <h1>لوحة تحكم أوميجا 👑</h1>
-        <p>الوضع: <span id="status" style="color:#2ecc71">متصل ومزامن ✅</span></p>
-        <button class="btn" style="background:#e67e22; color:#fff" onclick="createRoom()">1. إنشاء غرفة</button>
-        <div id="roomInfo" style="display:none; margin-top:10px;">
-            <h2 style="font-size:2rem;">كود الغرفة: <span id="rCode" style="color:var(--gold)">----</span></h2>
-            <button class="btn" style="background:#2ecc71; color:#fff" onclick="pushQuestionToPlayers()">2. إرسال السؤال الحالي للاعبين 🚀</button>
-        </div>
-    </div>
-    <div class="card">
-        <h3>السؤال الذي سيظهر للاعبين الآن:</h3>
-        <h2 id="previewQ" style="color:var(--gold)">لم يتم اختيار سؤال بعد</h2>
+        <h1>لوحة تحكم محمد وبهاء 👑</h1>
+        <div id="syncIndicator" style="color: orange;">جاري الفحص... ⏳</div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
+    // إعداداتك الصحيحة
     const firebaseConfig = {
         apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
         authDomain: "qurnn-1c9c4.firebaseapp.com",
@@ -62,59 +54,55 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let selectedQ = null;
-    let currentRoom = "";
 
-    // 1. مزامنة بنك الأسئلة (عند محمد وبهاء)
-    onValue(ref(db, 'shared_questions'), (snap) => {
-        const data = snap.val();
-        const listDiv = document.getElementById('list');
+    // فحص الاتصال
+    onValue(ref(db, '.info/connected'), (snap) => {
+        const status = document.getElementById('syncIndicator');
+        if (snap.val() === true) {
+            status.innerText = "متصل بالسحاب ✅ (جاهز للإضافة)";
+            status.style.color = "#2ecc71";
+        } else {
+            status.innerText = "غير متصل! افحص الإنترنت ❌";
+            status.style.color = "#ff4757";
+        }
+    });
+
+    // جلب الأسئلة وعرضها (بتحديث حي)
+    onValue(ref(db, 'global_questions'), (snapshot) => {
+        const listDiv = document.getElementById('questionsList');
+        const data = snapshot.val();
         listDiv.innerHTML = "";
-        if(!data) return listDiv.innerHTML = "البنك فارغ";
+        if(!data) { listDiv.innerHTML = "لا يوجد أسئلة في السحاب."; return; }
 
         Object.entries(data).forEach(([id, q]) => {
-            let div = document.createElement('div');
-            div.className = "q-item";
-            div.innerHTML = `<strong>${q.text}</strong><br>
-                             <button onclick="selectQ('${id}')" style="background:green; color:white; border:none; padding:5px; cursor:pointer;">اختيار</button>
-                             <button onclick="deleteQ('${id}')" style="background:red; color:white; border:none; padding:5px; cursor:pointer;">حذف</button>`;
-            listDiv.appendChild(div);
+            listDiv.innerHTML += `
+                <div class="q-item">
+                    <strong>${q.text}</strong>
+                    <button onclick="deleteQ('${id}')" style="background:red; color:white; border:none; padding:3px 10px; cursor:pointer; float:left;">حذف</button>
+                    <div style="clear:both"></div>
+                </div>`;
         });
     });
 
-    window.saveToCloud = function() {
+    window.saveToFirebase = function() {
         const text = document.getElementById('newQ').value;
-        const opt0 = document.getElementById('opt0').value;
-        if(!text || !opt0) return alert("عبّي البيانات!");
-        const newRef = push(ref(db, 'shared_questions'));
-        set(newRef, { text, options: [opt0, document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value] });
-        document.querySelectorAll('input').forEach(i => i.value = "");
-    };
+        const o0 = document.getElementById('opt0').value;
+        if(!text || !o0) return alert("عبّي البيانات يا بطل!");
 
-    window.selectQ = function(id) {
-        onValue(ref(db, `shared_questions/${id}`), (s) => {
-            selectedQ = s.val();
-            document.getElementById('previewQ').innerText = selectedQ.text;
-        }, { onlyOnce: true });
-    };
-
-    window.deleteQ = function(id) { remove(ref(db, `shared_questions/${id}`)); };
-
-    window.createRoom = function() {
-        currentRoom = Math.floor(1000 + Math.random() * 9000).toString();
-        document.getElementById('rCode').innerText = currentRoom;
-        document.getElementById('roomInfo').style.display = "block";
-        set(ref(db, `rooms/${currentRoom}/state`), { status: "waiting" });
-    };
-
-    // 3. إرسال السؤال للاعبين (بكبسة زر)
-    window.pushQuestionToPlayers = function() {
-        if(!selectedQ || !currentRoom) return alert("أنشئ غرفة واختار سؤال أولاً!");
-        update(ref(db, `rooms/${currentRoom}/state`), {
-            status: "playing",
-            qText: selectedQ.text,
-            options: selectedQ.options
+        const newQRef = push(ref(db, 'global_questions'));
+        set(newQRef, {
+            text: text,
+            options: [o0, document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value]
+        }).then(() => {
+            alert("✅ تم الحفظ بنجاح! هسا المفروض بينت عند بهاء.");
+            document.querySelectorAll('input').forEach(i => i.value = "");
+        }).catch((error) => {
+            alert("❌ فشل الحفظ! السبب: " + error.message);
         });
+    };
+
+    window.deleteQ = function(id) {
+        if(confirm("حذف نهائي؟")) remove(ref(db, `global_questions/${id}`));
     };
 </script>
 </body>
