@@ -3,230 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>تحدي أوميجا - ساحة اللاعب</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<title>أوميجا كويز - لاعب</title>
 <style>
-  :root { --gold: #d4af37; --navy: #0a192f; --cream: #f3e5ab; --wine: #722f37; }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { 
-    margin: 0; background: var(--navy); color: white; 
-    font-family: 'Tajawal', sans-serif; overflow: hidden; touch-action: manipulation;
-  }
+  :root { --gold: #d4af37; --navy: #0a192f; }
+  body { margin:0; background: var(--navy); color:white; font-family: sans-serif; text-align:center; overflow:hidden; }
+  
+  /* شاشات الدخول والانتظار */
+  .screen { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:var(--navy); z-index:100; }
+  .card { background: rgba(255,255,255,0.05); padding:30px; border-radius:20px; border:1px solid var(--gold); width:100%; max-width:400px; }
+  input { width:100%; padding:15px; margin:10px 0; border-radius:10px; border:1px solid var(--gold); background:#1a2a4a; color:white; }
+  button { width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer; }
 
-  /* شاشة الإرشادات والتعليمات */
-  #guideOverlay {
-    position: fixed; inset: 0; background: var(--navy); z-index: 5000;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px;
-  }
-  .guide-box { 
-    background: rgba(212,175,55,0.05); border: 2px solid var(--gold); 
-    border-radius: 25px; padding: 30px; max-width: 450px; text-align: center;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  }
-  .guide-box h2 { color: var(--gold); font-size: 1.8rem; margin-bottom: 20px; border-bottom: 1px solid var(--gold); padding-bottom: 10px; }
-  .guide-row { margin-bottom: 15px; font-size: 1.1rem; line-height: 1.6; text-align: right; }
-  .start-btn { 
-    background: var(--gold); color: var(--navy); border: none; padding: 15px 40px; 
-    border-radius: 50px; font-weight: 900; font-size: 1.2rem; cursor: pointer; margin-top: 15px;
-  }
+  /* شاشة السرقة */
+  #stealScreen { position:fixed; inset:0; background:#ff0000; z-index:5000; display:none; align-items:center; justify-content:center; font-size:3rem; font-weight:900; animation: flash 0.3s infinite; }
+  @keyframes flash { 0%, 100% { opacity:1; } 50% { opacity:0.5; } }
 
-  /* شاشة السرقة الكبرى */
-  #stealScreen {
-    position: fixed; inset: 0; background: var(--wine); z-index: 4000;
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 3.5rem; font-weight: 900; color: white; animation: flash 0.4s infinite; cursor: pointer;
-  }
-  @keyframes flash { 0% { background: var(--wine); } 50% { background: #ff0000; } 100% { background: var(--wine); } }
-
-  /* واجهة اللعب */
-  .game-container { height: 100vh; display: flex; flex-direction: column; padding: 15px; }
-  .top-bar { 
-    display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; margin-bottom: 15px;
-    border: 1px solid rgba(212,175,55,0.3);
-  }
-  .score-display { font-size: 1.4rem; font-weight: 900; color: var(--gold); }
-  .player-name { opacity: 0.8; font-size: 1rem; }
-
-  /* القوى الخارقة */
-  .powers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-  .power-btn { 
-    background: rgba(212,175,55,0.1); border: 1px solid var(--gold); color: white;
-    padding: 12px; border-radius: 15px; font-weight: bold; font-size: 0.9rem; cursor: pointer;
-  }
-  .power-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  /* شبكة أزرار الإجابة */
-  .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-grow: 1; }
-  .pad { 
-    border: none; border-radius: 25px; font-size: 4rem; color: white; 
-    cursor: pointer; transition: transform 0.1s, opacity 0.3s;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 0 rgba(0,0,0,0.2);
-  }
-  .pad:active { transform: translateY(4px); box-shadow: none; }
-  .pad.locked { opacity: 0.2; pointer-events: none; }
-
-  /* ألوان الأزرار */
-  .red { background: #e91e63; }
-  .blue { background: #2196f3; }
-  .green { background: #4caf50; }
-  .yellow { background: #ffeb3b; }
-
-  #status-msg { margin-top: 10px; font-weight: bold; color: var(--gold); height: 20px; }
+  /* شبكة اللعب */
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; height:80vh; padding:10px; }
+  .pad { border:none; border-radius:20px; font-size:3.5rem; color:white; }
+  .locked { opacity:0.3; pointer-events:none; }
 </style>
 </head>
 <body>
 
-<div id="guideOverlay">
-  <div class="guide-box">
-    <h2>📜 قوانين المغامرة</h2>
-    <div class="guide-row">🥷 <b>وضع السرقة:</b> إذا تحولت الشاشة للأحمر، اضغط فوراً لسرقة 2000 نقطة من المتصدر!</div>
-    <div class="guide-row">💣 <b>قنبلة الذكاء:</b> تحذف لك خيارين خاطئين (تستخدم مرة واحدة).</div>
-    <div class="guide-row">❄️ <b>تجميد الخصوم:</b> تشل حركة البقية لـ 3 ثوانٍ.</div>
-    <div class="guide-row">✨ <b>السرعة:</b> كلما أجبت أسرع، زادت فرصك في الظهور بـ Live Feed.</div>
-    <button class="start-btn" onclick="startGame()">موافق، ابدأ الآن! 🔥</button>
+<div id="loginScreen" class="screen">
+  <div class="card">
+    <h2 style="color:var(--gold)">OMEGA QUIZ 👑</h2>
+    <input type="text" id="roomInput" placeholder="أدخل كود الغرفة">
+    <input type="text" id="nameInput" placeholder="أدخل اسمك">
+    <button onclick="joinRoom()">انضم الآن</button>
   </div>
 </div>
 
-<div id="stealScreen" onclick="handleStealClick()">
-  <div>🥷 اسررررق!</div>
-  <div style="font-size: 1.2rem; margin-top: 20px;">اضغط بسرعة قبل زملائك</div>
+<div id="waitScreen" class="screen" style="display:none">
+  <div class="card">
+    <h2 style="color:var(--gold)">تم الدخول! ✅</h2>
+    <div style="text-align:right; font-size:0.9rem; margin:15px 0;">
+      <p>• انتظر بدء اللعبة من محمد جابر.</p>
+      <p>• عند وميض الشاشة باللون الأحمر، اضغط للسرقة!</p>
+      <p>• أجب بسرعة لتحصل على نقاط أعلى.</p>
+    </div>
+    <p style="animation: pulse 1s infinite">بانتظار الهوست للبدء... ⏳</p>
+  </div>
 </div>
 
-<div class="game-container">
-  <div class="top-bar">
-    <div class="player-name" id="displayPName">اللاعب: ---</div>
-    <div class="score-display"><span id="scoreVal">0</span> PTS</div>
-  </div>
+<div id="stealScreen" onclick="performSteal()">🥷 اسررررق!</div>
 
-  <div class="powers-grid">
-    <button class="power-btn" id="bombBtn" onclick="usePower('bomb', '💣 قنبلة')">💣 قنبلة</button>
-    <button class="power-btn" id="iceBtn" onclick="usePower('ice', '❄️ تجميد')">❄️ تجميد</button>
-  </div>
-
-  <div id="status-msg"></div>
-
-  <div class="answers-grid" id="mainGrid">
-    <button class="pad red" onclick="submitAnswer(0)">▲</button>
-    <button class="pad blue" onclick="submitAnswer(1)">◆</button>
-    <button class="pad green" onclick="submitAnswer(2)">●</button>
-    <button class="pad yellow" onclick="submitAnswer(3)">■</button>
+<div id="gameUI" style="display:none">
+  <div style="padding:10px; color:var(--gold); font-weight:bold;">النقاط: <span id="scoreVal">0</span></div>
+  <div class="grid" id="mainGrid">
+    <button class="pad" style="background:#e91e63" onclick="ans(0)">▲</button>
+    <button class="pad" style="background:#2196f3" onclick="ans(1)">◆</button>
+    <button class="pad" style="background:#4caf50" onclick="ans(2)">●</button>
+    <button class="pad" style="background:#ffeb3b" onclick="ans(3)">■</button>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-  import { getDatabase, ref, update, onValue, increment, set } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+  import { getDatabase, ref, set, onValue, update, increment } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-  // --- إعدادات Firebase الخاصة بك ---
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
+  const firebaseConfig = { /* ضع نفس بيانات الهوست هنا */ };
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const roomID = "OMEGA_SESSION";
 
-  // إعداد بيانات اللاعب
-  const pName = prompt("أدخل اسمك الملكي:") || "مشارك";
-  const pID = "player_" + Math.floor(Math.random() * 10000);
-  let myScore = 0;
-  let canAnswer = true;
+  let myID, myRoom, myName, myScore = 0;
 
-  document.getElementById('displayPName').innerText = "اللاعب: " + pName;
+  window.joinRoom = function() {
+    myRoom = document.getElementById('roomInput').value;
+    myName = document.getElementById('nameInput').value;
+    if(!myRoom || !myName) return alert("أكمل البيانات");
 
-  // تسجيل الدخول في قاعدة البيانات
-  set(ref(db, `rooms/${roomID}/players/${pID}`), {
-    name: pName,
-    score: 0,
-    lastAction: "join"
-  });
-
-  // الاستماع لحالة الغرفة (بدء السؤال أو تفعيل السرقة)
-  onValue(ref(db, `rooms/${roomID}/state`), (snapshot) => {
-    const state = snapshot.val();
-    if (!state) return;
-
-    // تفعيل وضع السرقة
-    if (state.event === "steal_mode") {
-      document.getElementById('stealScreen').style.display = "flex";
-    } else {
-      document.getElementById('stealScreen').style.display = "none";
-    }
-
-    // تصفير الأقفال عند السؤال الجديد
-    if (state.status === "playing") {
-      unlockPads();
-      document.getElementById('status-msg').innerText = "السؤال متاح الآن! 🔥";
-    }
-  });
-
-  // وظيفة إرسال الإجابة
-  window.submitAnswer = function(id) {
-    if (!canAnswer) return;
+    myID = "p_" + Math.floor(Math.random()*9999);
+    set(ref(db, `rooms/${myRoom}/players/${myID}`), { name: myName, score: 0 });
     
-    // تأثير القصاصات عند الضغط (للحماس)
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('waitScreen').style.display = 'flex';
 
-    // إضافة نقاط (المنطق الفعلي للتصحيح يكون في الهوست، هنا نضيف مبدئياً)
+    onValue(ref(db, `rooms/${myRoom}/state`), (s) => {
+      const state = s.val();
+      if(!state) return;
+      
+      // التزامن مع الهوست
+      if(state.status === "playing") {
+        document.getElementById('waitScreen').style.display = 'none';
+        document.getElementById('gameUI').style.display = 'block';
+        document.getElementById('mainGrid').classList.remove('locked');
+      }
+      
+      // وضع السرقة
+      document.getElementById('stealScreen').style.display = (state.event === "steal_active") ? "flex" : "none";
+    });
+  };
+
+  window.ans = function(id) {
     myScore += 1000;
-    updateScore();
-
-    // قفل الأزرار لمنع التكرار
-    lockPads();
-    document.getElementById('status-msg').innerText = "تم إرسال إجابتك.. انتظر الهوست";
-  };
-
-  // وظيفة السرقة الكبرى
-  window.handleStealClick = function() {
-    myScore += 2000;
-    updateScore();
-    document.getElementById('stealScreen').style.display = "none";
-    
-    // إرسال خبر السرقة للـ Live Feed في الهوست
-    set(ref(db, `rooms/${roomID}/logs`), {
-      msg: `🥷 يا رباااه! ${pName} نفذ عملية سرقة ناجحة (+2000)!`
-    });
-
-    confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
-  };
-
-  // استخدام القوى الخارقة
-  window.usePower = function(type, label) {
-    document.getElementById(type + 'Btn').disabled = true;
-    set(ref(db, `rooms/${roomID}/logs`), {
-      msg: `🚀 ${pName} استخدم قوة [${label}]!`
-    });
-    document.getElementById('status-msg').innerText = `تم تفعيل ${label}`;
-  };
-
-  function updateScore() {
     document.getElementById('scoreVal').innerText = myScore;
-    update(ref(db, `rooms/${roomID}/players/${pID}`), { score: myScore });
-  }
-
-  function lockPads() {
-    canAnswer = false;
+    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: myScore });
     document.getElementById('mainGrid').classList.add('locked');
-  }
-
-  function unlockPads() {
-    canAnswer = true;
-    document.getElementById('mainGrid').classList.remove('locked');
-  }
-
-  window.startGame = function() {
-    document.getElementById('guideOverlay').style.display = 'none';
   };
 
+  window.performSteal = function() {
+    myScore += 2000;
+    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: myScore });
+    set(ref(db, `rooms/${myRoom}/logs`), { msg: `🥷 خطير! ${myName} سرق 2000 نقطة!` });
+    document.getElementById('stealScreen').style.display = "none";
+  };
 </script>
 </body>
 </html>
+
