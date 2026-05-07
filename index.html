@@ -3,79 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 أوميجا كويز - دخول اللاعب</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<title>🎮 أوميجا كويز - لاعب</title>
 <style>
-  body { font-family: 'Tajawal', sans-serif; background: #0a0a1a; color: #fff; text-align: center; margin: 0; padding: 20px; }
-  .card { background: rgba(255,255,255,0.05); border: 1px solid #6366f1; border-radius: 20px; padding: 30px; max-width: 400px; margin: 50px auto; }
-  input { width: 90%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #6366f1; background: #1a1a2e; color: #fff; font-size: 1.1rem; text-align: center; }
-  .btn { width: 90%; padding: 15px; background: #6366f1; border: none; border-radius: 12px; color: #fff; font-weight: 900; cursor: pointer; font-size: 1.2rem; }
-  .status-msg { margin-top: 15px; color: #ff4757; font-size: 0.9rem; }
+  body { font-family: sans-serif; background: #0a0a1a; color: white; text-align: center; padding: 20px; }
+  .btn { width: 100%; padding: 20px; margin: 10px 0; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; color: white; }
+  #gameUI { display: none; }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <h2 style="color:#6366f1">انضم للتحدي 👑</h2>
-  <input id="codeInput" type="number" placeholder="أدخل كود الغرفة (4 أرقام)">
-  <input id="nameInput" type="text" placeholder="أدخل اسمك">
-  <button class="btn" onclick="joinGame()">🚀 دخول الآن</button>
-  <div id="statusMsg" class="status-msg"></div>
+<div id="login">
+  <h2>دخول التحدي 👑</h2>
+  <input id="room" type="number" placeholder="كود الغرفة" style="padding:10px; margin:5px;">
+  <input id="name" type="text" placeholder="اسمك" style="padding:10px; margin:5px;">
+  <button onclick="join()" style="padding:10px 20px; background:#d4af37; border:none; cursor:pointer;">دخول</button>
+</div>
+
+<div id="gameUI">
+  <h2 id="qTitle">انتظر السؤال...</h2>
+  <div id="options"></div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+  import { getDatabase, ref, set, onValue, update, increment } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-// تأكد أن هذه البيانات تطابق ملف الهوست تماماً
-const firebaseConfig = {
-  apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
-  authDomain: "qurnn-1c9c4.firebaseapp.com",
-  databaseURL: "https://qurnn-1c9c4-default-rtdb.firebaseio.com",
-  projectId: "qurnn-1c9c4",
-  storageBucket: "qurnn-1c9c4.firebasestorage.app",
-  messagingSenderId: "483393093513",
-  appId: "1:483393093513:web:ae3ff0f67e6945a91b6b58"
-};
+  const firebaseConfig = { /* نفس بيانات الهوست */ };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  let myRoom, myID;
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-window.joinGame = async function() {
-  const code = document.getElementById('codeInput').value;
-  const name = document.getElementById('nameInput').value;
-  const msg = document.getElementById('statusMsg');
-
-  if(!code || !name) { msg.innerText = "يرجى إدخال الكود والاسم!"; return; }
-
-  // التحقق من وجود الغرفة في Firebase
-  const roomRef = ref(db, `rooms/${code}`);
-  const snapshot = await get(roomRef);
-
-  if (snapshot.exists()) {
-    const playerID = "p_" + Math.random().toString(36).substr(2, 5);
-    await set(ref(db, `rooms/${code}/players/${playerID}`), {
-      name: name,
-      score: 0,
-      joinedAt: Date.now()
-    });
+  window.join = function() {
+    myRoom = document.getElementById('room').value;
+    myID = "p_" + Math.random().toString(36).substr(2, 5);
+    set(ref(db, `rooms/${myRoom}/players/${myID}`), { name: document.getElementById('name').value, score: 0 });
     
-    // حفظ البيانات محلياً والانتقال لصفحة الانتظار أو اللعب
-    msg.style.color = "#2ed573";
-    msg.innerText = "تم الدخول بنجاح! انتظر الهوست...";
-    
-    // هنا يمكنك إضافة كود لعرض الأسئلة فور بدئها من الهوست
-    onValue(ref(db, `rooms/${code}/state`), (snap) => {
-       if(snap.val() && snap.val().status === "playing") {
-         alert("بدأت اللعبة! استعد.");
-         // يمكنك توجيه اللاعب لواجهة الأسئلة هنا
-       }
-    });
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('gameUI').style.display = 'block';
 
-  } else {
-    msg.innerText = "كود الغرفة خاطئ أو لم يتم إنشاؤها بعد!";
-  }
-};
+    onValue(ref(db, `rooms/${myRoom}/state`), (s) => {
+      const state = s.val();
+      if(state && state.status === "playing") {
+        document.getElementById('qTitle').innerText = state.qText;
+        const optsDiv = document.getElementById('options');
+        optsDiv.innerHTML = state.options.map((o, i) => `
+          <button class="btn" style="background:#6366f1" onclick="answer(${i})">${o}</button>
+        `).join('');
+      }
+    });
+  };
+
+  window.answer = function(idx) {
+    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: increment(100) });
+    document.getElementById('options').innerHTML = "<h3>تم استلام الإجابة! انتظر السؤال التالي...</h3>";
+  };
 </script>
 </body>
 </html>
