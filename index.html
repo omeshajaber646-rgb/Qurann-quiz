@@ -1,113 +1,144 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 أوميجا كويز - لاعب</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-<style>
-  body { font-family: 'Tajawal', sans-serif; background: #0a0a1a; color: #fff; text-align: center; margin: 0; padding: 20px; }
-  .card { background: rgba(255,255,255,0.05); border: 2px solid #d4af37; border-radius: 20px; padding: 30px; max-width: 400px; margin: 50px auto; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
-  input { width: 90%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #d4af37; background: #1a1a2e; color: #fff; font-size: 1.2rem; text-align: center; }
-  .btn { width: 90%; padding: 15px; background: #d4af37; color: #0a192f; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 1.2rem; }
-  #waitScreen { display: none; }
-  #gameUI { display: none; padding: 10px; }
-  .opt-btn { width: 100%; padding: 20px; margin: 10px 0; border: none; border-radius: 15px; font-size: 1.5rem; font-weight: bold; color: #fff; cursor: pointer; }
-</style>
+    <meta charset="UTF-8">
+    <title>👑 أوميجا - تحدي الأبطال</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --navy: #0a192f; --light: #f1f2f6; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .container { width: 90%; max-width: 500px; text-align: center; }
+        .card { background: rgba(255,255,255,0.1); border: 2px solid var(--gold); border-radius: 20px; padding: 25px; backdrop-filter: blur(10px); }
+        .btn-opt { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--gold); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; font-size: 1.1rem; transition: 0.3s; }
+        .btn-opt:hover { background: var(--gold); color: var(--navy); }
+        
+        /* تأثير التجميد */
+        .frozen { pointer-events: none; filter: blur(3px) grayscale(1); opacity: 0.6; }
+        .frozen-overlay { position: absolute; top:0; left:0; right:0; bottom:0; display:none; align-items:center; justify-content:center; font-size: 5rem; z-index: 100; }
+
+        /* أزرار القوى */
+        .powers { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .power-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        .p-freeze { background: #3498db; color: white; }
+        .p-shield { background: #2ecc71; color: white; }
+        .p-steal { background: #e74c3c; color: white; }
+        
+        #score-box { position: fixed; top: 10px; right: 10px; background: var(--gold); color: var(--navy); padding: 5px 15px; border-radius: 20px; font-weight: 900; }
+    </style>
 </head>
 <body>
 
-<div id="login" class="card">
-  <h2 style="color:#d4af37">دخول التحدي 👑</h2>
-  <input id="roomInput" type="number" placeholder="كود الغرفة">
-  <input id="nameInput" type="text" placeholder="اسمك الكريم">
-  <button class="btn" onclick="joinRoom()">🚀 دخول الآن</button>
-  <p id="error" style="color: #ff4757; font-size: 0.8rem; margin-top: 10px;"></p>
-</div>
+<div id="score-box">النقاط: <span id="myScore">0</span></div>
+<div class="frozen-overlay" id="ice">❄️</div>
 
-<div id="waitScreen" class="card">
-  <h2 style="color:#d4af37">تم الاتصال بنجاح! ✅</h2>
-  <p>أهلاً <span id="pName"></span>.. خليك جاهز</p>
-  <p style="opacity: 0.7;">بانتظار محمد يبدأ اللعبة... ⏳</p>
-</div>
+<div class="container" id="mainGame">
+    <div id="loginArea" class="card">
+        <h2 style="color:var(--gold)">دخول التحدي 🏆</h2>
+        <input type="text" id="pName" placeholder="اسمه البطل..." style="width:80%; padding:10px; margin-bottom:10px; border-radius:8px;">
+        <input type="number" id="rCode" placeholder="كود الغرفة" style="width:80%; padding:10px; margin-bottom:20px; border-radius:8px;">
+        <button onclick="join()" style="width:87%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:900;">انطلاق!</button>
+    </div>
 
-<div id="gameUI">
-  <div class="card" style="max-width: 600px;">
-    <h2 id="qTitle" style="color:#d4af37">السؤال سيظهر هنا</h2>
-    <div id="optionsContainer"></div>
-  </div>
+    <div id="gameArea" style="display:none">
+        <div class="card">
+            <p id="qNum" style="color:var(--gold); font-weight:bold;"></p>
+            <h2 id="questionText">في انتظار السؤال...</h2>
+            <div id="options"></div>
+        </div>
+
+        <div class="powers" id="powerPanel" style="display:none">
+            <button class="power-btn p-freeze" onclick="usePower('freeze')">❄️ تجميد</button>
+            <button class="power-btn p-shield" onclick="usePower('shield')">🛡️ درع</button>
+            <button class="power-btn p-steal" onclick="usePower('steal')">💸 سرقة</button>
+        </div>
+    </div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue, update, increment } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-  // تأكد 100% أن هذه هي بيانات مشروعك الصحيحة
-  const firebaseConfig = {
-    apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
-    authDomain: "qurnn-1c9c4.firebaseapp.com",
-    databaseURL: "https://qurnn-1c9c4-default-rtdb.firebaseio.com",
-    projectId: "qurnn-1c9c4",
-    storageBucket: "qurnn-1c9c4.firebasestorage.app",
-    messagingSenderId: "483393093513",
-    appId: "1:483393093513:web:ae3ff0f67e6945a91b6b58"
-  };
+    const config = {
+        apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
+        authDomain: "qurnn-1c9c4.firebaseapp.com",
+        databaseURL: "https://qurnn-1c9c4-default-rtdb.firebaseio.com",
+        projectId: "qurnn-1c9c4",
+        storageBucket: "qurnn-1c9c4.firebasestorage.app",
+        messagingSenderId: "483393093513",
+        appId: "1:483393093513:web:ae3ff0f67e6945a91b6b58"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  let myID, myRoom;
+    const app = initializeApp(config);
+    const db = getDatabase(app);
 
-  window.joinRoom = function() {
-    myRoom = document.getElementById('roomInput').value;
-    const name = document.getElementById('nameInput').value;
-    const err = document.getElementById('error');
+    let myName = "";
+    let room = "";
+    let score = 0;
+    let hasShield = false;
 
-    if(!myRoom || !name) { err.innerText = "دخل الكود والاسم يا بطل!"; return; }
+    window.join = function() {
+        myName = document.getElementById('pName').value;
+        room = document.getElementById('rCode').value;
+        if(!myName || !room) return alert("عبّي بياناتك!");
 
-    myID = "p_" + Math.random().toString(36).substr(2, 5);
+        document.getElementById('loginArea').style.display = "none";
+        document.getElementById('gameArea').style.display = "block";
 
-    // تسجيل اللاعب فوراً في قاعدة البيانات
-    set(ref(db, `rooms/${myRoom}/players/${myID}`), {
-      name: name,
-      score: 0
-    }).then(() => {
-      // إخفاء شاشة الدخول وإظهار الانتظار
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('waitScreen').style.display = 'block';
-      document.getElementById('pName').innerText = name;
-      listenToGame();
-    }).catch((e) => {
-      err.innerText = "مشكلة في السيرفر، جرب مرة ثانية.";
-    });
-  };
+        // متابعة حالة الغرفة
+        onValue(ref(db, `rooms/${room}/state`), (snap) => {
+            const state = snap.val();
+            if(!state) return;
 
-  function listenToGame() {
-    onValue(ref(db, `rooms/${myRoom}/state`), (snapshot) => {
-      const state = snapshot.val();
-      if(state && state.status === "playing") {
-        document.getElementById('waitScreen').style.display = 'none';
-        document.getElementById('gameUI').style.display = 'block';
-        document.getElementById('qTitle').innerText = state.qText;
-        
-        const container = document.getElementById('optionsContainer');
-        container.innerHTML = state.options.map((opt, i) => `
-          <button class="opt-btn" style="background:#6366f1" onclick="submitAnswer(${i})">${opt}</button>
-        `).join('');
-      } else if (state && state.status === "ended") {
-        document.getElementById('qTitle').innerText = "🏁 انتهت اللعبة!";
-        document.getElementById('optionsContainer').innerHTML = "بانتظار محمد ينهي الجلسة.";
-      }
-    });
-  }
+            if(state.status === "playing") {
+                showQuestion(state.qText, state.options, state.qIndex);
+                if(state.powersEnabled) document.getElementById('powerPanel').style.display = "flex";
+            }
+        });
 
-  window.submitAnswer = function(idx) {
-    update(ref(db, `rooms/${myRoom}/players/${myID}`), {
-      score: increment(1000)
-    });
-    document.getElementById('optionsContainer').innerHTML = "<h3 style='color:#2ecc71'>تم الإرسال! انتظر السؤال التالي... ✅</h3>";
-    // تسجيل الحدث في شريط أحداث الهوست
-    set(ref(db, `rooms/${myRoom}/logs`), { msg: `${document.getElementById('pName').innerText} جاوب على السؤال!` });
-  };
+        // متابعة الهجمات (تجميد أو سرقة)
+        onValue(ref(db, `rooms/${room}/players/${myName}/effect`), (snap) => {
+            const effect = snap.val();
+            if(effect === "frozen") {
+                document.getElementById('mainGame').classList.add('frozen');
+                document.getElementById('ice').style.display = "flex";
+                setTimeout(() => {
+                    update(ref(db, `rooms/${room}/players/${myName}`), { effect: "none" });
+                    document.getElementById('mainGame').classList.remove('frozen');
+                    document.getElementById('ice').style.display = "none";
+                }, 5000); // تجميد لـ 5 ثواني
+            }
+        });
+    };
+
+    function showQuestion(txt, opts, idx) {
+        document.getElementById('qNum').innerText = "سؤال رقم " + (idx + 1);
+        document.getElementById('questionText').innerText = txt;
+        const optDiv = document.getElementById('options');
+        optDiv.innerHTML = "";
+        opts.forEach(opt => {
+            const b = document.createElement('button');
+            b.className = "btn-opt";
+            b.innerText = opt;
+            b.onclick = () => checkAns(opt, opts[0]); // دايماً أول خيار هو الصح بالكود
+            optDiv.appendChild(b);
+        });
+    }
+
+    function checkAns(picked, correct) {
+        if(picked === correct) {
+            score += 100;
+            document.getElementById('myScore').innerText = score;
+            alert("صح! +100");
+        } else {
+            alert("خطأ! ركز يا بطل");
+        }
+        document.getElementById('options').innerHTML = "تمت الإجابة.. انتظر السؤال التالي";
+    }
+
+    window.usePower = function(type) {
+        // هنا يتم إرسال طلب القوة للسيرفر (تحتاج لإكمال منطق اختيار الخصم لاحقاً)
+        alert("تم تفعيل " + type + "! (سيتم توجيهها للخصم المتصدر)");
+    };
 </script>
 </body>
 </html>
