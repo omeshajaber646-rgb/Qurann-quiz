@@ -5,136 +5,133 @@
 <title>👑 لوحة تحكم أوميجا - محمد جابر</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold: #d4af37; --navy: #0a192f; --cream: #f3e5ab; --wine: #722f37; }
-  body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: var(--cream); margin: 0; overflow-x: hidden; }
+  :root { --gold: #d4af37; --navy: #0a192f; --wine: #722f37; }
+  body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: #fff; margin: 0; text-align: center; }
+  .container { max-width: 900px; margin: auto; padding: 20px; }
+  .room-box { background: rgba(212,175,55,0.1); padding: 20px; border-radius: 15px; border: 2px solid var(--gold); margin-bottom: 20px; }
+  .q-card { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 20px; border: 1px solid var(--gold); position: relative; }
+  .timer-bar { height: 8px; background: var(--gold); width: 100%; position: absolute; bottom: 0; left: 0; transition: width 1s linear; }
+  .btn { padding: 15px 30px; border-radius: 50px; border: none; font-weight: 900; cursor: pointer; margin: 10px; font-size: 1.1rem; }
+  .btn-next { background: var(--gold); color: var(--navy); }
+  .btn-steal { background: var(--wine); color: white; }
   
-  #liveFeed {
-    position: fixed; top: 20px; left: 20px; width: 350px; height: 70px;
-    background: rgba(10, 25, 47, 0.95); border: 2px solid var(--gold);
-    border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    font-weight: bold; color: var(--gold); font-size: 1.1rem; z-index: 1000;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-  }
-
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px; text-align: center; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
-  .room-info { font-size: 2rem; color: var(--gold); background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px; border: 1px solid var(--gold); }
-  
-  .q-card { background: rgba(255,255,255,0.03); border: 2px solid var(--gold); border-radius: 24px; padding: 50px; position: relative; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
-  .timer-bar { height: 10px; background: var(--gold); width: 100%; position: absolute; bottom: 0; left: 0; border-radius: 0 0 24px 24px; transition: width 0.2s linear; }
-  .question-text { font-size: 3.2rem; font-weight: 900; margin-bottom: 40px; }
-  .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .opt-item { background: rgba(212, 175, 55, 0.08); border: 1px solid var(--gold); padding: 25px; border-radius: 15px; font-size: 1.8rem; color: white; }
-  
-  .controls { margin-top: 40px; display: flex; justify-content: center; gap: 20px; }
-  button { background: var(--gold); color: var(--navy); border: none; padding: 18px 45px; border-radius: 50px; font-weight: 900; cursor: pointer; font-size: 1.3rem; transition: 0.3s; }
-  button:hover { transform: scale(1.05); box-shadow: 0 0 30px var(--gold); }
-
-  #leaderboard { position: fixed; right: 20px; top: 20px; width: 260px; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); padding: 20px; border-radius: 20px; }
-  .lb-entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
+  /* لوحة السرقة اليدوية */
+  #stealPanel { display:none; background: rgba(0,0,0,0.9); position: fixed; inset: 0; z-index: 999; padding: 50px; }
+  .player-list-item { background: rgba(255,255,255,0.1); padding: 10px; margin: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 10px; }
 </style>
 </head>
 <body>
 
-<div id="liveFeed">🔔 بانتظار المتنافسين...</div>
-
 <div class="container">
-  <h1 style="color: var(--gold); font-size: 3.5rem; margin-bottom: 10px;">OMEGA AIMAN JABIR</h1>
-  <div class="room-info">كود الغرفة: <span id="roomDisplay">----</span></div>
+  <h1 style="color: var(--gold); font-size: 3rem;">OMEGA CONTROL</h1>
   
+  <div class="room-box">
+    <h2>كود الغرفة الجديد: <span id="roomCode" style="color: #fff; font-size: 2.5rem;">جاري الإنشاء...</span></h2>
+    <p>أعطِ هذا الكود للطلاب للدخول</p>
+  </div>
+
   <div class="q-card">
-    <div class="question-text" id="qText">جاهز للمنافسة؟</div>
-    <div class="opt-grid" id="optGrid"></div>
+    <h2 id="qText">انتظر دخول الطلاب ثم ابدأ اللعبة</h2>
+    <div id="opts" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;"></div>
     <div class="timer-bar" id="timerBar"></div>
   </div>
 
   <div class="controls">
-    <button id="startBtn" onclick="startGame()" style="background:#2ecc71">ابدأ اللعبة 🏁</button>
-    <button id="nextBtn" onclick="nextQuestion()" style="display:none">السؤال التالي 🚀</button>
-    <button onclick="triggerHeist()" style="background:var(--wine); color:white;">تفعيل السرقة 🥷</button>
+    <button class="btn btn-next" onclick="nextQuestion()">إطلاق السؤال التالي 🚀</button>
+    <button class="btn btn-steal" onclick="openStealPanel()">فتح قائمة السرقة 🥷</button>
   </div>
 
-  <div id="leaderboard">
-    <h3 style="color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px;">المتصدرون 🏆</h3>
+  <div id="leaderboard" style="margin-top: 30px;">
+    <h3 style="color: var(--gold);">المتصدرون (تظهر للجميع الآن) 🏆</h3>
     <div id="lbItems"></div>
   </div>
 </div>
 
+<div id="stealPanel">
+  <h2 style="color: var(--gold);">من تريد أن تسرق؟ 🥷</h2>
+  <div id="playerStealList"></div>
+  <button class="btn" onclick="document.getElementById('stealPanel').style.display='none'" style="background:#666;">إغلاق</button>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+  import { getDatabase, ref, set, onValue, update, increment } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
+  const firebaseConfig = { /* بياناتك هنا */ };
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const roomCode = prompt("أدخل كود الغرفة المخصص للطلاب (مثلاً 2026):") || "2026";
-  document.getElementById('roomDisplay').innerText = roomCode;
+  // إنشاء كود غرفة عشوائي من 4 أرقام
+  const roomID = Math.floor(1000 + Math.random() * 9000).toString();
+  document.getElementById('roomCode').innerText = roomID;
 
   let questions = [
-    { q: "ما هو تعريف الموعظة لغةً؟", opts: ["النصح والتذكير", "الشدة", "الإهمال", "القراءة"], ans: 0 },
-    { q: "سورة ورد فيها (وشفاء لما في الصدور)؟", opts: ["البقرة", "يونس", "لقمان", "يوسف"], ans: 1 }
+    { q: "ما هو تعريف الموعظة لغةً؟", opts: ["النصح والتذكير", "الشدة", "القراءة", "التجاهل"], ans: 0 },
+    { q: "في أي سورة وردت آية (وشفاء لما في الصدور)؟", opts: ["البقرة", "يونس", "لقمان", "يوسف"], ans: 1 }
   ];
   let currentIdx = -1;
+  let playersData = {};
 
-  // تصفير الغرفة
-  set(ref(db, `rooms/${roomCode}/state`), { status: "waiting", event: "none", index: -1 });
-
-  window.startGame = function() {
-    document.getElementById('startBtn').style.display = 'none';
-    document.getElementById('nextBtn').style.display = 'inline-block';
-    nextQuestion();
-  };
+  // تهيئة حالة الغرفة
+  set(ref(db, `rooms/${roomID}/state`), { status: "waiting", index: -1, showLeaderboard: false });
 
   window.nextQuestion = function() {
     currentIdx++;
     if(currentIdx < questions.length) {
-      const q = questions[currentIdx];
-      set(ref(db, `rooms/${roomCode}/state`), {
+      set(ref(db, `rooms/${roomID}/state`), {
         status: "playing",
         index: currentIdx,
-        event: "none",
-        correct: q.ans
+        showLeaderboard: false // إخفاء المتصدرين لبدء سؤال جديد
       });
-      document.getElementById('qText').innerText = q.q;
-      document.getElementById('optGrid').innerHTML = q.opts.map(o => `<div class="opt-item">${o}</div>`).join('');
-      resetTimer();
+      document.getElementById('qText').innerText = questions[currentIdx].q;
+      startTimer();
     }
   };
 
-  window.triggerHeist = function() {
-    update(ref(db, `rooms/${roomCode}/state`), { event: "steal_active" });
-    setTimeout(() => update(ref(db, `rooms/${roomCode}/state`), { event: "none" }), 3000);
-  };
+  function startTimer() {
+    let timeLeft = 100;
+    const bar = document.getElementById('timerBar');
+    const itv = setInterval(() => {
+      timeLeft -= 1;
+      bar.style.width = timeLeft + "%";
+      if(timeLeft <= 0) {
+        clearInterval(itv);
+        // عند انتهاء الوقت، أظهر المتصدرين عند الجميع
+        update(ref(db, `rooms/${roomID}/state`), { status: "timeout", showLeaderboard: true });
+      }
+    }, 150);
+  }
 
-  onValue(ref(db, `rooms/${roomCode}/logs`), (s) => {
-    if(s.exists()) document.getElementById('liveFeed').innerText = s.val().msg;
-  });
+  // تحديث لوحة الصدارة ومراقبة اللاعبين للسرقة
+  onValue(ref(db, `rooms/${roomID}/players`), (snap) => {
+    playersData = snap.val() || {};
+    const sorted = Object.entries(playersData).sort((a,b) => b[1].score - a[1].score);
+    
+    // عرض المتصدرين في الهوست
+    document.getElementById('lbItems').innerHTML = sorted.map(([id, p]) => `
+      <div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #333;">
+        <span>${p.name}</span><b>${p.score}</b>
+      </div>
+    `).join('');
 
-  onValue(ref(db, `rooms/${roomCode}/players`), (s) => {
-    const data = s.val(); if(!data) return;
-    const sorted = Object.values(data).sort((a,b) => b.score - a.score);
-    document.getElementById('lbItems').innerHTML = sorted.slice(0, 5).map(p => `
-      <div class="lb-entry"><span>${p.name}</span><b>${p.score}</b></div>
+    // تحديث قائمة السرقة
+    document.getElementById('playerStealList').innerHTML = sorted.map(([id, p]) => `
+      <div class="player-list-item">
+        <span>${p.name} (${p.score} نقطة)</span>
+        <button class="btn-steal" style="padding:5px 15px;" onclick="executeSteal('${id}', '${p.name}')">اسرق 1500 منه 💸</button>
+      </div>
     `).join('');
   });
 
-  function resetTimer() {
-    let w = 100;
-    const bar = document.getElementById('timerBar');
-    const itv = setInterval(() => {
-      w -= 1; bar.style.width = w + "%";
-      if(w <= 0) clearInterval(itv);
-    }, 200);
-  }
+  window.openStealPanel = function() {
+    document.getElementById('stealPanel').style.display = 'block';
+  };
+
+  window.executeSteal = function(pID, pName) {
+    update(ref(db, `rooms/${roomID}/players/${pID}`), { score: increment(-1500) });
+    set(ref(db, `rooms/${roomID}/state/lastSteal`), { msg: `🥷 محمد جابر سرق 1500 نقطة من ${pName}!` });
+    alert(`تمت السرقة من ${pName} بنجاح!`);
+  };
 </script>
 </body>
 </html>
