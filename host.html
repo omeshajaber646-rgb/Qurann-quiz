@@ -2,41 +2,45 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>👑 أوميجا - الإدارة الفولاذية</title>
+    <title>👑 أوميجا - بنك الأسئلة العام</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --navy: #0a192f; }
+        :root { --gold: #d4af37; --navy: #0a192f; --wine: #c0392b; }
         body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: #fff; margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 350px; background: rgba(0,0,0,0.5); border-left: 2px solid var(--gold); padding: 20px; overflow-y: auto; }
-        .main { flex: 1; padding: 30px; text-align: center; }
-        .card { background: rgba(255,255,255,0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--gold); background: #1a1a2e; color: #fff; font-family: 'Tajawal'; }
-        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: 900; margin-top: 10px; font-size: 1.1rem; }
-        .q-item { background: rgba(255,255,255,0.03); padding: 15px; margin-bottom: 10px; border-radius: 10px; border-right: 5px solid var(--gold); text-align: right; }
+        .sidebar { width: 380px; background: rgba(0,0,0,0.6); border-left: 3px solid var(--gold); padding: 25px; overflow-y: auto; }
+        .main { flex: 1; padding: 40px; text-align: center; overflow-y: auto; }
+        .card { background: rgba(255,255,255,0.07); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--gold); background: #050b18; color: #fff; }
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 1.1rem; }
+        .q-item { background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 15px; border-radius: 12px; border-right: 6px solid var(--gold); text-align: right; }
+        .del-btn { background: var(--wine); color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; float: left; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--gold); text-align:center;">📦 مخزن الأسئلة السحابي</h2>
+    <h2 style="color:var(--gold); text-align:center;">🌐 بنك الأسئلة الموحد</h2>
     <div class="card">
-        <input type="text" id="q" placeholder="اكتب السؤال...">
+        <p style="font-size:0.8rem; opacity:0.7">إضافة سؤال (سيظهر عند الجميع فوراً):</p>
+        <input type="text" id="q" placeholder="نص السؤال...">
         <input type="text" id="o0" placeholder="الجواب الصحيح ✅">
         <input type="text" id="o1" placeholder="خيار خطأ 1">
         <input type="text" id="o2" placeholder="خيار خطأ 2">
         <input type="text" id="o3" placeholder="خيار خطأ 3">
-        <button class="btn" onclick="sendToCloud()">🚀 حفظ للأبد عند الكل</button>
+        <button class="btn" onclick="saveToCloud()">💾 حفظ في بنك أوميجا</button>
     </div>
-    <div id="list">جاري المزامنة...</div>
+    <div id="list">جاري تحميل الأسئلة من السحاب...</div>
 </div>
 
 <div class="main">
     <div class="card">
-        <h1>تحكم محمد جابر وبهاء 👑</h1>
-        <p id="status" style="color:orange; font-weight:bold;">فحص الاتصال بالسيرفر... ⏳</p>
-        <button class="btn" style="background:#27ae60; color:#fff" onclick="makeRoom()">✨ إنشاء غرفة جديدة للطلاب</button>
-        <div id="roomArea" style="display:none; margin-top:20px;">
-            <h2 style="font-size:3rem; color:var(--gold)" id="codeOut">0000</h2>
+        <h1>منصة أوميجا للإدارة المشتركة 👑</h1>
+        <p id="netStatus" style="color:orange">فحص الاتصال بالمنصة...</p>
+        <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+        <button class="btn" style="background:#27ae60; color:white; width:auto; padding:20px 40px;" onclick="generateRoom()">✨ إنشاء غرفة تحدي جديدة</button>
+        <div id="roomBox" style="display:none; margin-top:30px;">
+            <h2 style="font-size:4rem; color:var(--gold); margin:0;" id="roomCode">----</h2>
+            <p>أعطِ هذا الكود للطلاب للدخول</p>
         </div>
     </div>
 </div>
@@ -58,54 +62,63 @@
     const app = initializeApp(config);
     const db = getDatabase(app);
 
-    // فحص الاتصال الحقيقي
+    // 1. فحص الاتصال بالمنصة
     onValue(ref(db, '.info/connected'), (s) => {
-        const st = document.getElementById('status');
-        if(s.val() === true) { st.innerText = "متصل بالسحاب ✅ (الأسئلة محفوظة)"; st.style.color = "#2ecc71"; }
-        else { st.innerText = "غير متصل! مشكلة بالنت أو القواعد ❌"; st.style.color = "#ff4757"; }
+        const ns = document.getElementById('netStatus');
+        if(s.val() === true) { ns.innerText = "متصل بالبنك العام ✅"; ns.style.color = "#2ecc71"; }
+        else { ns.innerText = "فصل الاتصال ❌"; ns.style.color = "#e74c3c"; }
     });
 
-    // جلب الأسئلة وعرضها (تحديث حي عند محمد وبهاء)
-    onValue(ref(db, 'omega_questions'), (snap) => {
+    // 2. مزامنة الأسئلة (أي شخص يفتح الهوست يشوفها)
+    onValue(ref(db, 'omega_public_bank'), (snap) => {
         const listDiv = document.getElementById('list');
         const data = snap.val();
         listDiv.innerHTML = "";
-        if(!data) { listDiv.innerHTML = "لا يوجد أسئلة مخزنة."; return; }
         
+        if(!data) {
+            listDiv.innerHTML = "<p style='text-align:center; opacity:0.5;'>البنك فارغ، كن أول من يضيف سؤالاً!</p>";
+            return;
+        }
+
         Object.entries(data).forEach(([id, q]) => {
-            listDiv.innerHTML += `<div class="q-item">
-                <strong>${q.text}</strong><br>
-                <small style="color:#2ecc71">✅ ${q.options[0]}</small>
-                <button onclick="del('${id}')" style="background:red; color:white; border:none; padding:2px 8px; cursor:pointer; float:left; border-radius:5px;">حذف</button>
-                <div style="clear:both"></div>
-            </div>`;
+            listDiv.innerHTML += `
+                <div class="q-item">
+                    <strong>${q.text}</strong><br>
+                    <small style="color:#2ecc71">✅ ${q.options[0]}</small>
+                    <button class="del-btn" onclick="deleteQ('${id}')">حذف</button>
+                    <div style="clear:both"></div>
+                </div>`;
         });
     });
 
-    window.sendToCloud = function() {
-        const text = document.getElementById('q').value;
+    // 3. الحفظ في السحاب (ببين عند الكل)
+    window.saveToCloud = function() {
+        const txt = document.getElementById('q').value;
         const o0 = document.getElementById('o0').value;
-        if(!text || !o0) return alert("يا محمد عبّي السؤال والجواب!");
+        if(!txt || !o0) return alert("البيانات ناقصة يا محمد!");
 
-        const newRef = push(ref(db, 'omega_questions'));
+        const newRef = push(ref(db, 'omega_public_bank'));
         set(newRef, {
-            text: text,
+            text: txt,
             options: [o0, document.getElementById('o1').value, document.getElementById('o2').value, document.getElementById('o3').value]
         }).then(() => {
-            alert("✅ انحفظ بالسيرفر! مستحيل يطير بالريفريش.");
             document.querySelectorAll('input').forEach(i => i.value = "");
-        }).catch(e => {
-            alert("❌ السيرفر رفض الحفظ! السبب: " + e.message + "\nتأكد من الـ Rules في فايربيس.");
         });
     };
 
-    window.del = function(id) { if(confirm("حذف نهائي؟")) remove(ref(db, `omega_questions/${id}`)); };
+    // 4. الحذف من السحاب (بينحذف عند الكل)
+    window.deleteQ = function(id) {
+        if(confirm("هل تريد مسح هذا السؤال من البنك العام؟")) {
+            remove(ref(db, `omega_public_bank/${id}`));
+        }
+    };
 
-    window.makeRoom = function() {
-        const c = Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('codeOut').innerText = c;
-        document.getElementById('roomArea').style.display = "block";
+    window.generateRoom = function() {
+        const code = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('roomCode').innerText = code;
+        document.getElementById('roomBox').style.display = "block";
     };
 </script>
 </body>
 </html>
+
