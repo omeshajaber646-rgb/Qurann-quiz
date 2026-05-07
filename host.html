@@ -3,265 +3,479 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة المضيف - الموعظة من القرآن</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<title>🎮 لوحة التحكم - الهوست</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a1628;--card:#0f2040;--accent:#c9a84c;--accent2:#e8c96e;--green:#2ecc71;--red:#e74c3c;--blue:#3498db;--text:#f0e8d0;--border:rgba(201,168,76,0.3);}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(201,168,76,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(52,152,219,0.06) 0%,transparent 50%);pointer-events:none;z-index:0;}
-.wrap{max-width:900px;margin:0 auto;position:relative;z-index:1;}
-.header{text-align:center;margin-bottom:24px;}
-.header h1{font-size:1.8rem;font-weight:900;color:var(--accent2);text-shadow:0 0 20px rgba(201,168,76,0.4);}
-.header p{color:#8899aa;font-size:0.85rem;margin-top:4px;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;}
-.card-title{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:16px;}
-.room-code-box{background:rgba(201,168,76,0.1);border:2px solid var(--accent);border-radius:14px;padding:18px;text-align:center;margin-bottom:16px;}
-.room-label{font-size:0.8rem;color:#8899aa;margin-bottom:6px;}
-.room-code{font-size:3rem;font-weight:900;color:var(--accent2);letter-spacing:8px;text-shadow:0 0 30px rgba(201,168,76,0.5);}
-.room-link{font-size:0.72rem;color:#6699aa;margin-top:6px;word-break:break-all;}
-.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;min-height:60px;}
-.player-chip{background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.3);border-radius:8px;padding:8px;text-align:center;font-size:0.85rem;font-weight:600;color:#7dc7f0;}
-.player-chip.answered{background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:#7de8a0;}
-.no-players{color:#556677;font-size:0.85rem;text-align:center;padding:16px;grid-column:1/-1;}
-.btn{border:none;border-radius:10px;padding:13px 24px;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;transition:all 0.25s;width:100%;}
-.btn-gold{background:linear-gradient(135deg,#c9a84c,#e8c96e);color:#0a1628;}
-.btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,168,76,0.4);}
-.btn-gold:disabled{opacity:0.4;cursor:not-allowed;}
-.btn-green{background:linear-gradient(135deg,#27ae60,#1e8449);color:white;}
-.btn-green:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(39,174,96,0.4);}
-.btn-gray{background:rgba(255,255,255,0.08);color:#aaa;margin-top:8px;}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-.stat-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;text-align:center;}
-.stat-num{font-size:1.6rem;font-weight:900;color:var(--accent2);}
-.stat-label{font-size:0.72rem;color:#8899aa;margin-top:2px;}
-.timer-wrap{text-align:center;margin-bottom:14px;}
-.timer-big{font-size:3.5rem;font-weight:900;color:var(--accent2);line-height:1;}
-.timer-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:50px;overflow:hidden;margin-top:8px;}
-.timer-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s linear;}
-.q-box{background:rgba(201,168,76,0.06);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;text-align:center;}
-.q-cat{display:inline-block;background:rgba(201,168,76,0.15);border:1px solid var(--border);border-radius:16px;padding:3px 12px;font-size:0.75rem;color:var(--accent);margin-bottom:8px;}
-.q-num{font-size:0.75rem;color:#8899aa;margin-bottom:6px;}
-.q-text{font-size:1.2rem;font-weight:700;line-height:1.8;}
-.answers-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-.ans-p{border-radius:8px;padding:10px 12px;font-size:0.85rem;font-weight:600;display:flex;align-items:center;gap:6px;}
-.ans-p.a0{background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.4);color:#f08080;}
-.ans-p.a1{background:rgba(52,152,219,0.2);border:1px solid rgba(52,152,219,0.4);color:#80c8f0;}
-.ans-p.a2{background:rgba(243,156,18,0.2);border:1px solid rgba(243,156,18,0.4);color:#f0c878;}
-.ans-p.a3{background:rgba(39,174,96,0.2);border:1px solid rgba(39,174,96,0.3);color:#80e0a0;}
-.ans-p.correct-ans{outline:3px solid var(--green);outline-offset:2px;}
-.correct-reveal{font-size:1.1rem;font-weight:700;color:var(--green);padding:12px;background:rgba(46,204,113,0.1);border-radius:10px;text-align:center;margin-bottom:12px;}
-.lb-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:6px;}
-.lb-rank{font-size:1.1rem;font-weight:900;color:var(--accent);min-width:28px;}
-.lb-name{flex:1;font-weight:600;}
-.lb-score{font-weight:900;color:var(--accent2);}
-.lb-item:nth-child(1){background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);}
-.screen{display:none;}.screen.active{display:block;}
-.status{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;font-weight:600;}
-.status.waiting{background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.3);color:#7dc7f0;}
-.status.live{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);color:#f08080;}
-.dot{width:7px;height:7px;border-radius:50%;animation:pulse 1.5s infinite;}
-.dot.blue{background:#3498db;}.dot.red{background:#e74c3c;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-@media(max-width:500px){.answers-grid{grid-template-columns:1fr}.room-code{font-size:2.2rem}}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: #0a0a1a;
+    color: #fff;
+    min-height: 100vh;
+  }
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image: linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 16px 24px; margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+  }
+  .logo { font-size: 24px; font-weight: 900; }
+  .logo span { color: #6366f1; }
+  .host-badge {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 700;
+  }
+
+  /* Room code */
+  .room-card {
+    background: linear-gradient(135deg, #1e1e3a, #2d1b69);
+    border: 2px solid #6366f1;
+    border-radius: 20px; padding: 28px; margin-bottom: 24px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .room-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(99,102,241,0.2), transparent 60%);
+  }
+  .room-label { font-size: 14px; color: #a5b4fc; margin-bottom: 8px; letter-spacing: 2px; text-transform: uppercase; }
+  .room-code {
+    font-size: 72px; font-weight: 900; letter-spacing: 16px;
+    background: linear-gradient(135deg, #fff, #a5b4fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: none; line-height: 1;
+  }
+  .room-url { font-size: 13px; color: #6366f1; margin-top: 12px; word-break: break-all; }
+  .new-room-btn {
+    margin-top: 16px; background: rgba(99,102,241,0.2); border: 1px solid #6366f1;
+    color: #a5b4fc; padding: 10px 24px; border-radius: 999px;
+    cursor: pointer; font-family: 'Tajawal', sans-serif; font-size: 14px;
+    transition: all 0.2s;
+  }
+  .new-room-btn:hover { background: #6366f1; color: #fff; }
+
+  /* Players */
+  .section-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #a5b4fc; }
+  .players-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 24px; min-height: 80px;
+  }
+  .player-chip {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 12px; text-align: center;
+    animation: popIn 0.3s ease;
+  }
+  .player-chip .avatar { font-size: 28px; }
+  .player-chip .name { font-size: 13px; margin-top: 4px; font-weight: 700; }
+  .player-chip .score { font-size: 11px; color: #a5b4fc; }
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .waiting-text { color: #4b5563; font-size: 14px; text-align: center; padding: 20px; width: 100%; }
+
+  /* Questions */
+  .questions-panel {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 24px; margin-bottom: 24px;
+  }
+  .q-list { display: flex; flex-direction: column; gap: 10px; }
+  .q-item {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .q-item:hover { background: rgba(99,102,241,0.15); border-color: #6366f1; }
+  .q-item.active { background: rgba(99,102,241,0.25); border-color: #6366f1; border-width: 2px; }
+  .q-item.done { opacity: 0.4; }
+  .q-num {
+    width: 32px; height: 32px; background: #6366f1; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; flex-shrink: 0; margin-left: 12px;
+  }
+  .q-text { flex: 1; font-size: 14px; line-height: 1.4; }
+  .q-pts { font-size: 12px; color: #f59e0b; font-weight: 700; }
+
+  /* Controls */
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-main {
+    flex: 1; min-width: 160px; padding: 16px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none; border-radius: 14px; color: #fff;
+    font-family: 'Tajawal', sans-serif; font-size: 18px; font-weight: 900;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.4); }
+  .btn-main:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-end {
+    padding: 16px 24px; background: rgba(239,68,68,0.15);
+    border: 1px solid #ef4444; border-radius: 14px; color: #ef4444;
+    font-family: 'Tajawal', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-end:hover { background: #ef4444; color: #fff; }
+
+  /* Current Q display */
+  .current-q {
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
+    border: 2px solid #6366f1; border-radius: 20px; padding: 24px; margin-bottom: 24px;
+    display: none;
+  }
+  .current-q.visible { display: block; animation: slideDown 0.4s ease; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .current-q-label { font-size: 12px; color: #a5b4fc; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .current-q-text { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt {
+    padding: 12px 16px; border-radius: 12px; font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .opt-A { background: rgba(239,68,68,0.2); border: 1px solid #ef4444; }
+  .opt-B { background: rgba(59,130,246,0.2); border: 1px solid #3b82f6; }
+  .opt-C { background: rgba(234,179,8,0.2); border: 1px solid #eab308; }
+  .opt-D { background: rgba(34,197,94,0.2); border: 1px solid #22c55e; }
+  .opt-icon { font-size: 20px; }
+  .correct-badge { background: #22c55e; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+
+  /* Timer */
+  .timer-bar {
+    height: 6px; background: rgba(255,255,255,0.1); border-radius: 999px;
+    margin-top: 16px; overflow: hidden;
+  }
+  .timer-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+    transition: width 1s linear;
+  }
+  .timer-text { text-align: center; font-size: 14px; color: #a5b4fc; margin-top: 6px; }
+
+  /* Answers count */
+  .answers-count { font-size: 14px; color: #a5b4fc; margin-top: 8px; text-align: center; }
+
+  /* Leaderboard */
+  .leaderboard {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 24px; margin-bottom: 24px;
+  }
+  .lb-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 12px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.04);
+    transition: all 0.3s;
+  }
+  .lb-item.top { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); }
+  .lb-rank { font-size: 20px; width: 36px; text-align: center; }
+  .lb-name { flex: 1; font-weight: 700; }
+  .lb-score { font-size: 18px; font-weight: 900; color: #fbbf24; }
+
+  /* Status */
+  .status-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.05); border-radius: 999px;
+    padding: 8px 16px; margin-bottom: 24px; width: fit-content;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .status-text { font-size: 13px; color: #a5b4fc; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="bg-grid"></div>
+<div class="container">
+
   <div class="header">
-    <h1>🎓 لوحة المضيف</h1>
-    <p>الموعظة من القرآن الكريم — سورة لقمان</p>
+    <div class="logo">كوِيز<span>لايف</span></div>
+    <div class="host-badge">🎮 الهوست</div>
   </div>
 
-  <!-- SETUP -->
-  <div class="screen active" id="setupScreen">
-    <div class="card">
-      <div class="card-title">🔑 رمز الغرفة</div>
-      <div class="room-code-box">
-        <div class="room-label">شارك هذا الرمز مع الطلاب ليدخلوا</div>
-        <div class="room-code" id="roomCodeDisplay">- - - - -</div>
-        <div class="room-link" id="roomLinkDisplay"></div>
-      </div>
-      <button class="btn btn-gold" id="btnGenRoom">⚡ إنشاء غرفة جديدة</button>
-    </div>
-    <div class="card" id="waitingCard" style="display:none">
-      <div class="card-title">👥 الطلاب المنضمون (<span id="playerCount">0</span>)</div>
-      <div class="status waiting"><div class="dot blue"></div> في انتظار الطلاب...</div>
-      <div class="players-grid" id="playersGrid"><div class="no-players">لم ينضم أحد بعد</div></div>
-      <div style="margin-top:16px">
-        <button class="btn btn-gold" id="btnStart" disabled>▶ ابدأ اللعبة</button>
-      </div>
-    </div>
+  <div class="room-card">
+    <div class="room-label">كود الغرفة</div>
+    <div class="room-code" id="roomCode">----</div>
+    <div class="room-url" id="roomUrl"></div>
+    <button class="new-room-btn" onclick="newRoom()">🔄 غرفة جديدة</button>
   </div>
 
-  <!-- GAME -->
-  <div class="screen" id="gameScreen">
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-num" id="statQ">1</div><div class="stat-label">السؤال</div></div>
-      <div class="stat-box"><div class="stat-num" id="statAns">0</div><div class="stat-label">أجابوا</div></div>
-      <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">اللاعبون</div></div>
-    </div>
-    <div class="card">
-      <div class="timer-wrap">
-        <div class="timer-big" id="timerBig">20</div>
-        <div style="font-size:0.75rem;color:#8899aa;margin-top:4px;">ثانية</div>
-        <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
-      </div>
-      <div class="q-box">
-        <div class="q-cat" id="qCat"></div>
-        <div class="q-num" id="qNum"></div>
-        <div class="q-text" id="qText"></div>
-      </div>
-      <div class="answers-grid" id="ansPrev"></div>
-      <div class="status live" id="liveStatus"><div class="dot red"></div> السؤال مباشر الآن</div>
-      <div class="players-grid" id="answeredGrid"></div>
-    </div>
-    <div id="revealCard" style="display:none">
-      <div class="card">
-        <div class="card-title">✅ الإجابة الصحيحة</div>
-        <div class="correct-reveal" id="correctReveal"></div>
-        <button class="btn btn-green" id="btnNext">التالي ◄</button>
-      </div>
-    </div>
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <div class="status-text" id="statusText">في انتظار اللاعبين...</div>
   </div>
 
-  <!-- RESULTS -->
-  <div class="screen" id="resultsScreen">
-    <div class="card">
-      <div class="card-title">🏆 النتائج النهائية</div>
-      <div id="leaderboard"></div>
-      <button class="btn btn-gold" onclick="location.reload()" style="margin-top:16px">🔄 لعبة جديدة</button>
-    </div>
+  <div class="section-title">👥 اللاعبون (<span id="playerCount">0</span>)</div>
+  <div class="players-grid" id="playersGrid">
+    <div class="waiting-text">لا يوجد لاعبون بعد...</div>
   </div>
+
+  <div class="current-q" id="currentQBox">
+    <div class="current-q-label">السؤال الحالي</div>
+    <div class="current-q-text" id="currentQText"></div>
+    <div class="options-grid" id="currentOpts"></div>
+    <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+    <div class="timer-text">الوقت المتبقي: <span id="timerSec">20</span> ثانية</div>
+    <div class="answers-count" id="answersCount"></div>
+  </div>
+
+  <div class="questions-panel">
+    <div class="section-title">📋 الأسئلة</div>
+    <div class="q-list" id="qList"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-main" id="sendBtn" onclick="sendQuestion()" disabled>📤 أرسل السؤال التالي</button>
+    <button class="btn-end" onclick="endGame()">🏁 إنهاء اللعبة</button>
+  </div>
+
+  <br>
+  <div class="leaderboard" id="leaderboard" style="display:none">
+    <div class="section-title">🏆 الترتيب</div>
+    <div id="lbList"></div>
+  </div>
+
 </div>
 
-<script>
-firebase.initializeApp({databaseURL:"https://quran111-quizz-default-rtdb.firebaseio.com"});
-const db = firebase.database();
-const SHAPES = ["▲","◆","●","■"];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, remove, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
+  authDomain: "qurnn-1c9c4.firebaseapp.com",
+  databaseURL: "https://qurnn-1c9c4-default-rtdb.firebaseio.com",
+  projectId: "qurnn-1c9c4",
+  storageBucket: "qurnn-1c9c4.firebasestorage.app",
+  messagingSenderId: "483393093513",
+  appId: "1:483393093513:web:ae3ff0f67e6945a91b6b58",
+  measurementId: "G-6BQ0HGZ3N1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ===== الأسئلة من البريزنتيشن =====
 const questions = [
-  {category:"تعريف الموعظة",text:"من أين مأخوذة كلمة الموعظة لغةً؟",answers:["من الفعل وَعَظ","من الفعل عَظُمَ","من الفعل وَصَى","من الفعل نَصَحَ"],correct:0},
-  {category:"تعريف الموعظة",text:"ما معنى الموعظة اصطلاحاً؟",answers:["تلاوة القرآن فقط","تذكير الإنسان بما ينفعه وتحذيره مما يضره مع الترغيب والترهيب","الأمر بالمعروف فقط","الدعاء والتضرع"],correct:1},
-  {category:"الموعظة في القرآن",text:"في أي سورة: ﴿يا أيها الناس قد جاءتكم موعظة من ربكم وشفاء لما في الصدور﴾؟",answers:["سورة البقرة","سورة يونس آية 57","سورة النحل","سورة آل عمران"],correct:1},
-  {category:"أنواع الموعظة",text:"الموعظة التي تعرض قصص الأنبياء والأمم السابقة لأخذ العبرة تسمى:",answers:["الموعظة بالحكمة","الموعظة بالقصص","الموعظة بالترغيب","الموعظة بالجدال"],correct:1},
-  {category:"أنواع الموعظة",text:"الموعظة بالترغيب والترهيب تعني:",answers:["الوعد بالجنة فقط","التخويف من النار فقط","تحفيز النفس بذكر الجنة وتحذيرها بذكر النار","سرد القصص الدينية"],correct:2},
-  {category:"سورة لقمان — وصية 1",text:"ما أول وصية بدأ بها لقمان ابنه؟",answers:["بر الوالدين","الوصية بتوحيد الله والنهي عن الشرك","إقامة الصلاة","حسن الخلق"],correct:1},
-  {category:"سورة لقمان — وصية 1",text:"كيف وصف القرآن الشرك في سورة لقمان؟",answers:["ذنب كبير","خطأ فادح","ظلم عظيم","كفر مبين"],correct:2},
-  {category:"سورة لقمان — وصية 2",text:"ما الوصية الثانية في سورة لقمان؟",answers:["إقامة الصلاة","حسن الخلق","بر الوالدين","النهي عن الكبر"],correct:2},
-  {category:"سورة لقمان — وصية 2",text:"ما الحكمة من بر الوالدين كما في العارضة؟",answers:["لأنهما يملكان المال","اعتراف بالجميل ووفاء للعهد وسلوك طريق الفضل","لأن طاعتهما واجبة في كل شيء","لأن الأم هي الأهم فقط"],correct:1},
-  {category:"سورة لقمان — وصية 3",text:"الوصية الثالثة تشمل ثلاثة أمور، ما هي؟",answers:["الصيام والزكاة والحج","إقامة الصلاة والأمر بالمعروف والنهي عن المنكر والصبر","الصلاة والزكاة وبر الوالدين","التوحيد والصلاة والصوم"],correct:1},
-  {category:"سورة لقمان — وصية 3",text:"ما الذي وصف بأنه وقود الاستمرار في طريق الحق؟",answers:["العلم والمعرفة","المال والقوة","الصبر على الشدائد","الدعاء والتوكل"],correct:2},
-  {category:"سورة لقمان — وصية 4",text:"الوصية الرابعة هي الوصية بحسن الخلق، ما أبرز ما تضمنته؟",answers:["كثرة الصدقة","ترك الكبر والتعالي في التعامل مع الناس","الحرص على العبادة فقط","الابتعاد عن الناس"],correct:1},
-  {category:"سورة لقمان — وصية 4",text:"ما الذي يفتح القلوب ويجلب محبة الله حسب وصية لقمان الرابعة؟",answers:["كثرة الكلام","الثروة والمكانة","التواضع وترك الكبر","الصمت الدائم"],correct:2},
-  {category:"مقاصد الموعظة",text:"القرآن الكريم ليس مجرد نصيحة عابرة بل هو:",answers:["كتاب تاريخ وقصص","منهج رباني متكامل يهدف إلى إصلاح النفس وتزكيتها","مجموعة أوامر ونواهي فقط","كتاب للعبادة فقط"],correct:1},
-  {category:"خلاصة الدرس",text:"موعظة لقمان في السورة تهدف بشكل رئيسي إلى:",answers:["إثبات فضل لقمان","تكوين شخصية مؤمنة متكاملة في علاقتها بالله والناس والنفس","حفظ الآيات فقط","الترهيب من العقوبة فقط"],correct:1}
+  {
+    q: "ما معنى كلمة «الموعظة» لغةً؟",
+    opts: ["النصح والتذكير بعواقب الأمور", "الأمر بالمعروف والنهي عن المنكر", "قراءة القرآن الكريم", "الصلاة والذكر"],
+    correct: 0, pts: 10
+  },
+  {
+    q: "في أي سورة وردت الآية: ﴿يَا أَيُّهَا النَّاسُ قَدْ جَاءَتْكُم مَّوْعِظَةٌ مِّن رَّبِّكُمْ﴾؟",
+    opts: ["سورة البقرة", "سورة يونس", "سورة لقمان", "سورة يوسف"],
+    correct: 1, pts: 10
+  },
+  {
+    q: "ما هي الوصية الأولى التي ذكرها لقمان لابنه؟",
+    opts: ["بر الوالدين", "إقامة الصلاة", "توحيد الله وعدم الشرك", "حسن الخلق"],
+    correct: 2, pts: 10
+  },
+  {
+    q: "ماذا قال لقمان عن الشرك بالله في الآية الكريمة؟",
+    opts: ["إنه حرام شديد", "إنه ظلم عظيم", "إنه ذنب كبير", "إنه خطأ فادح"],
+    correct: 1, pts: 10
+  },
+  {
+    q: "ما الوصية الثانية التي وردت في سورة لقمان؟",
+    opts: ["حسن الخلق", "إقامة الصلاة", "توحيد الله", "بر الوالدين"],
+    correct: 3, pts: 10
+  },
+  {
+    q: "الموعظة في القرآن الكريم ليست مجرد نصيحة عابرة، بل هي منهج...",
+    opts: ["سياسي متكامل", "رباني متكامل", "اجتماعي متكامل", "تربوي خاص"],
+    correct: 1, pts: 10
+  },
+  {
+    q: "ما الفائدة من الموعظة بالقصص في القرآن الكريم؟",
+    opts: ["الترفيه والتسلية", "أخذ العبرة والاتعاظ", "حفظ التاريخ", "تعليم اللغة"],
+    correct: 1, pts: 10
+  },
+  {
+    q: "ما الوصية الثالثة في سورة لقمان؟",
+    opts: ["حسن الخلق", "بر الوالدين", "إقامة الصلاة والأمر بالمعروف", "الصدق والأمانة"],
+    correct: 2, pts: 10
+  },
+  {
+    q: "ما الذي يجلبه التواضع وترك الكبر حسب سورة لقمان؟",
+    opts: ["المال والثروة", "محبة الله وقبول الناس", "القوة والسلطة", "العلم والحكمة"],
+    correct: 1, pts: 10
+  },
+  {
+    q: "ما أسلوب الموعظة بالترغيب والترهيب في القرآن؟",
+    opts: ["ذكر قصص الأنبياء فقط", "تحفيز النفس بذكر الجنة وتحذيرها بذكر النار", "الأمر المباشر بالطاعة", "النهي عن المعاصي فقط"],
+    correct: 1, pts: 10
+  }
 ];
 
-let roomCode=null,roomRef=null,currentQ=0,timerInt=null,timeLeft=20,players={},gamePhase='setup';
+let currentRoom = null;
+let currentQIndex = -1;
+let timerInterval = null;
+let timeLeft = 20;
+let answersReceived = 0;
+let totalPlayers = 0;
 
-document.getElementById('btnGenRoom').onclick=()=>{
-  roomCode=Math.random().toString(36).substring(2,7).toUpperCase();
-  document.getElementById('roomCodeDisplay').textContent=roomCode;
-  const base=window.location.href.replace('host.html','index.html');
-  document.getElementById('roomLinkDisplay').textContent=base+'?room='+roomCode;
-  roomRef=db.ref('rooms/'+roomCode);
-  roomRef.set({status:'waiting',currentQ:-1,players:{},createdAt:Date.now()});
-  document.getElementById('waitingCard').style.display='block';
-  document.getElementById('btnGenRoom').disabled=true;
-  roomRef.child('players').on('value',snap=>{
-    players=snap.val()||{};
-    const c=Object.keys(players).length;
-    document.getElementById('playerCount').textContent=c;
-    document.getElementById('statTotal').textContent=c;
-    renderPlayers();
-    document.getElementById('btnStart').disabled=c<1;
-  });
-};
+const avatars = ['🦁','🐯','🦊','🐺','🦄','🐉','🦅','🦋','🐬','🦈','🦁','🎯'];
 
-function renderPlayers(){
-  const g=document.getElementById('playersGrid');
-  const k=Object.keys(players);
-  if(!k.length){g.innerHTML='<div class="no-players">لم ينضم أحد بعد</div>';return;}
-  g.innerHTML=k.map(id=>`<div class="player-chip">${players[id].name}</div>`).join('');
+function generateCode() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-document.getElementById('btnStart').onclick=()=>{
-  document.getElementById('setupScreen').classList.remove('active');
-  document.getElementById('gameScreen').classList.add('active');
-  showQuestion();
+window.newRoom = async function() {
+  if (currentRoom) await remove(ref(db, `rooms/${currentRoom}`));
+  currentRoom = generateCode();
+  document.getElementById('roomCode').textContent = currentRoom;
+  const playerUrl = window.location.href.replace('host.html', 'player.html') + '?room=' + currentRoom;
+  document.getElementById('roomUrl').textContent = '🔗 رابط اللاعبين: ' + playerUrl;
+  currentQIndex = -1;
+  answersReceived = 0;
+
+  await set(ref(db, `rooms/${currentRoom}`), {
+    status: 'waiting',
+    currentQ: -1,
+    createdAt: Date.now()
+  });
+
+  listenToRoom();
+  renderQuestions();
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('currentQBox').classList.remove('visible');
+  document.getElementById('leaderboard').style.display = 'none';
+  document.getElementById('statusText').textContent = 'في انتظار اللاعبين...';
 };
 
-function showQuestion(){
-  gamePhase='question';
-  const q=questions[currentQ];
-  document.getElementById('revealCard').style.display='none';
-  document.getElementById('liveStatus').style.display='flex';
-  document.getElementById('statQ').textContent=`${currentQ+1}/${questions.length}`;
-  document.getElementById('statAns').textContent='0';
-  document.getElementById('qCat').textContent=q.category;
-  document.getElementById('qNum').textContent=`السؤال ${currentQ+1} من ${questions.length}`;
-  document.getElementById('qText').textContent=q.text;
-  document.getElementById('ansPrev').innerHTML=q.answers.map((a,i)=>
-    `<div class="ans-p a${i}${i===q.correct?' correct-ans':''}"><span>${SHAPES[i]}</span>${a}</div>`).join('');
-  document.getElementById('answeredGrid').innerHTML='';
-  roomRef.update({status:'question',currentQ,questionData:{text:q.text,category:q.category,answers:q.answers,timeLimit:20},answers:null});
-  roomRef.child('answers').on('value',snap=>{
-    if(gamePhase!=='question')return;
-    const ans=snap.val()||{};
-    document.getElementById('statAns').textContent=Object.keys(ans).length;
-    const g=document.getElementById('answeredGrid');
-    g.innerHTML=Object.keys(players).map(k=>{
-      const done=ans&&ans[k];
-      return`<div class="player-chip${done?' answered':''}">${players[k].name}${done?' ✓':''}</div>`;
-    }).join('');
+function listenToRoom() {
+  onValue(ref(db, `rooms/${currentRoom}/players`), (snap) => {
+    const players = snap.val() || {};
+    const list = Object.values(players);
+    totalPlayers = list.length;
+    document.getElementById('playerCount').textContent = totalPlayers;
+    renderPlayers(list);
+    updateLeaderboard(list);
+    if (timerInterval) {
+      answersReceived = list.filter(p => p.lastAnswer === currentQIndex).length;
+      document.getElementById('answersCount').textContent = `✅ أجاب ${answersReceived} من ${totalPlayers}`;
+    }
   });
+}
+
+function renderPlayers(list) {
+  const grid = document.getElementById('playersGrid');
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="waiting-text">لا يوجد لاعبون بعد...</div>';
+    return;
+  }
+  grid.innerHTML = list.map((p, i) => `
+    <div class="player-chip">
+      <div class="avatar">${avatars[i % avatars.length]}</div>
+      <div class="name">${p.name}</div>
+      <div class="score">${p.score || 0} نقطة</div>
+    </div>
+  `).join('');
+}
+
+function renderQuestions() {
+  const list = document.getElementById('qList');
+  list.innerHTML = questions.map((q, i) => `
+    <div class="q-item ${i === currentQIndex ? 'active' : ''} ${i < currentQIndex ? 'done' : ''}" id="qi${i}">
+      <div class="q-num">${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-pts">+${q.pts}</div>
+    </div>
+  `).join('');
+}
+
+window.sendQuestion = async function() {
+  if (!currentRoom) return;
+  currentQIndex++;
+  if (currentQIndex >= questions.length) {
+    endGame(); return;
+  }
+
+  clearInterval(timerInterval);
+  answersReceived = 0;
+  const q = questions[currentQIndex];
+
+  await set(ref(db, `rooms/${currentRoom}/currentQuestion`), {
+    index: currentQIndex,
+    question: q.q,
+    options: q.opts,
+    correct: q.correct,
+    pts: q.pts,
+    startTime: Date.now(),
+    timeLimit: 20
+  });
+  await update(ref(db, `rooms/${currentRoom}`), { status: 'playing', currentQ: currentQIndex });
+
+  showCurrentQ(q);
+  renderQuestions();
   startTimer();
+  document.getElementById('statusText').textContent = `سؤال ${currentQIndex + 1} من ${questions.length}`;
+  if (currentQIndex + 1 >= questions.length) {
+    document.getElementById('sendBtn').textContent = '🏁 إنهاء اللعبة';
+  }
+};
+
+function showCurrentQ(q) {
+  document.getElementById('currentQText').textContent = q.q;
+  const colors = ['opt-A','opt-B','opt-C','opt-D'];
+  const icons = ['🔴','🔵','🟡','🟢'];
+  document.getElementById('currentOpts').innerHTML = q.opts.map((o, i) => `
+    <div class="opt ${colors[i]}">
+      <span class="opt-icon">${icons[i]}</span>
+      <span>${o}</span>
+      ${i === q.correct ? '<span class="correct-badge">✓ صح</span>' : ''}
+    </div>
+  `).join('');
+  document.getElementById('currentQBox').classList.add('visible');
+  document.getElementById('answersCount').textContent = `✅ أجاب 0 من ${totalPlayers}`;
 }
 
-function startTimer(){
-  timeLeft=20;clearInterval(timerInt);updateTimer();
-  timerInt=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInt);revealAnswer();}},1000);
+function startTimer() {
+  timeLeft = 20;
+  document.getElementById('timerSec').textContent = timeLeft;
+  document.getElementById('timerFill').style.width = '100%';
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timerSec').textContent = timeLeft;
+    document.getElementById('timerFill').style.width = (timeLeft / 20 * 100) + '%';
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('statusText').textContent = 'انتهى الوقت! ⏰';
+    }
+  }, 1000);
 }
-function updateTimer(){
-  const t=document.getElementById('timerBig');
-  t.textContent=timeLeft;
-  t.style.color=timeLeft>10?'#e8c96e':timeLeft>5?'#ff9b35':'#e74c3c';
-  document.getElementById('timerFill').style.width=(timeLeft/20*100)+'%';
+
+function updateLeaderboard(list) {
+  const sorted = [...list].sort((a, b) => (b.score || 0) - (a.score || 0));
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('lbList').innerHTML = sorted.slice(0, 5).map((p, i) => `
+    <div class="lb-item ${i === 0 ? 'top' : ''}">
+      <div class="lb-rank">${medals[i] || (i + 1)}</div>
+      <div class="lb-name">${p.name}</div>
+      <div class="lb-score">${p.score || 0}</div>
+    </div>
+  `).join('');
+  document.getElementById('leaderboard').style.display = 'block';
 }
-function revealAnswer(){
-  gamePhase='reveal';clearInterval(timerInt);
-  roomRef.child('answers').off();
-  roomRef.update({status:'reveal',correctAnswer:questions[currentQ].correct});
-  document.getElementById('liveStatus').style.display='none';
-  document.getElementById('revealCard').style.display='block';
-  const q=questions[currentQ];
-  document.getElementById('correctReveal').textContent=`${SHAPES[q.correct]}  ${q.answers[q.correct]}`;
-}
-document.getElementById('btnNext').onclick=()=>{
-  currentQ++;
-  if(currentQ>=questions.length)showResults();
-  else showQuestion();
+
+window.endGame = async function() {
+  clearInterval(timerInterval);
+  if (currentRoom) {
+    await update(ref(db, `rooms/${currentRoom}`), { status: 'ended' });
+  }
+  document.getElementById('statusText').textContent = '🏁 انتهت اللعبة!';
+  document.getElementById('sendBtn').disabled = true;
 };
-function showResults(){
-  gamePhase='results';
-  roomRef.update({status:'finished'});
-  document.getElementById('gameScreen').classList.remove('active');
-  document.getElementById('resultsScreen').classList.add('active');
-  roomRef.child('scores').once('value',snap=>{
-    const sc=snap.val()||{};
-    const sorted=Object.keys(players).map(k=>({name:players[k].name,score:sc[k]||0})).sort((a,b)=>b.score-a.score);
-    const medals=['🥇','🥈','🥉'];
-    document.getElementById('leaderboard').innerHTML=sorted.map((p,i)=>`
-      <div class="lb-item">
-        <div class="lb-rank">${medals[i]||(i+1)}</div>
-        <div class="lb-name">${p.name}</div>
-        <div class="lb-score">${p.score} نقطة</div>
-      </div>`).join('');
-  });
-}
+
+// Start with a room
+newRoom();
 </script>
 </body>
 </html>
