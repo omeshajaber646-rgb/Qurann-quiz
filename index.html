@@ -3,103 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>أوميجا كويز - لاعب</title>
+<title>🎮 أوميجا كويز - دخول اللاعب</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold: #d4af37; --navy: #0a192f; }
-  body { margin:0; background: var(--navy); color:white; font-family: sans-serif; text-align:center; }
-  .screen { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
-  .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; height:60vh; }
-  .pad { border:none; border-radius:20px; font-size:3rem; color:white; }
-  
-  /* لوحة المتصدرين عند اللاعب */
-  #lbOverlay { display:none; background: rgba(10,25,47,0.95); position:fixed; inset:0; z-index:1000; padding:20px; }
-  .lb-card { background: rgba(255,255,255,0.05); border: 2px solid var(--gold); border-radius:20px; padding:20px; }
-  .steal-msg { background: var(--wine); color: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; animation: bounce 1s; }
-  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  body { font-family: 'Tajawal', sans-serif; background: #0a0a1a; color: #fff; text-align: center; margin: 0; padding: 20px; }
+  .card { background: rgba(255,255,255,0.05); border: 1px solid #6366f1; border-radius: 20px; padding: 30px; max-width: 400px; margin: 50px auto; }
+  input { width: 90%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #6366f1; background: #1a1a2e; color: #fff; font-size: 1.1rem; text-align: center; }
+  .btn { width: 90%; padding: 15px; background: #6366f1; border: none; border-radius: 12px; color: #fff; font-weight: 900; cursor: pointer; font-size: 1.2rem; }
+  .status-msg { margin-top: 15px; color: #ff4757; font-size: 0.9rem; }
 </style>
 </head>
 <body>
 
-<div id="loginScreen" class="screen">
-  <h2 style="color:var(--gold)">أهلاً بك في تحدي أوميجا 👑</h2>
-  <input type="text" id="roomInput" placeholder="كود الغرفة (من محمد جابر)" style="width:80%; padding:15px; margin:10px; border-radius:10px;">
-  <input type="text" id="nameInput" placeholder="اسمك الكريم" style="width:80%; padding:15px; margin:10px; border-radius:10px;">
-  <button onclick="join()" style="width:80%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold;">دخول</button>
-</div>
-
-<div id="lbOverlay" class="screen">
-  <div class="lb-card" style="width:90%;">
-    <div id="stealNotification"></div>
-    <h2 style="color:var(--gold)">لوحة المتصدرين الحالية 🏆</h2>
-    <div id="fullLb"></div>
-    <p style="margin-top:20px; opacity:0.7;">انتظر السؤال التالي من محمد...</p>
-  </div>
-</div>
-
-<div id="gameUI" style="display:none; padding:20px;">
-  <h3 id="pName">اللاعب: </h3>
-  <div class="grid">
-    <button class="pad" style="background:#e91e63" onclick="send(0)">▲</button>
-    <button class="pad" style="background:#2196f3" onclick="send(1)">◆</button>
-    <button class="pad" style="background:#4caf50" onclick="send(2)">●</button>
-    <button class="pad" style="background:#ffeb3b" onclick="send(3)">■</button>
-  </div>
+<div class="card">
+  <h2 style="color:#6366f1">انضم للتحدي 👑</h2>
+  <input id="codeInput" type="number" placeholder="أدخل كود الغرفة (4 أرقام)">
+  <input id="nameInput" type="text" placeholder="أدخل اسمك">
+  <button class="btn" onclick="joinGame()">🚀 دخول الآن</button>
+  <div id="statusMsg" class="status-msg"></div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue, update, increment } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  const firebaseConfig = { /* نفس بيانات الهوست */ };
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+// تأكد أن هذه البيانات تطابق ملف الهوست تماماً
+const firebaseConfig = {
+  apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
+  authDomain: "qurnn-1c9c4.firebaseapp.com",
+  databaseURL: "https://qurnn-1c9c4-default-rtdb.firebaseio.com",
+  projectId: "qurnn-1c9c4",
+  storageBucket: "qurnn-1c9c4.firebasestorage.app",
+  messagingSenderId: "483393093513",
+  appId: "1:483393093513:web:ae3ff0f67e6945a91b6b58"
+};
 
-  let myRoom, myID, myName;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-  window.join = function() {
-    myRoom = document.getElementById('roomInput').value;
-    myName = document.getElementById('nameInput').value;
-    myID = "p_" + Math.random().toString(36).substr(2, 5);
+window.joinGame = async function() {
+  const code = document.getElementById('codeInput').value;
+  const name = document.getElementById('nameInput').value;
+  const msg = document.getElementById('statusMsg');
+
+  if(!code || !name) { msg.innerText = "يرجى إدخال الكود والاسم!"; return; }
+
+  // التحقق من وجود الغرفة في Firebase
+  const roomRef = ref(db, `rooms/${code}`);
+  const snapshot = await get(roomRef);
+
+  if (snapshot.exists()) {
+    const playerID = "p_" + Math.random().toString(36).substr(2, 5);
+    await set(ref(db, `rooms/${code}/players/${playerID}`), {
+      name: name,
+      score: 0,
+      joinedAt: Date.now()
+    });
     
-    set(ref(db, `rooms/${myRoom}/players/${myID}`), { name: myName, score: 0 });
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('gameUI').style.display = 'block';
-    document.getElementById('pName').innerText = "اللاعب: " + myName;
-
-    // مراقبة حالة الغرفة
-    onValue(ref(db, `rooms/${myRoom}/state`), (snap) => {
-      const state = snap.val();
-      if(!state) return;
-
-      // إظهار/إخفاء لوحة المتصدرين للجميع
-      if(state.showLeaderboard) {
-        document.getElementById('lbOverlay').style.display = 'flex';
-      } else {
-        document.getElementById('lbOverlay').style.display = 'none';
-      }
-
-      // عرض رسائل السرقة
-      if(state.lastSteal) {
-        document.getElementById('stealNotification').innerHTML = `<div class="steal-msg">${state.lastSteal.msg}</div>`;
-      }
+    // حفظ البيانات محلياً والانتقال لصفحة الانتظار أو اللعب
+    msg.style.color = "#2ed573";
+    msg.innerText = "تم الدخول بنجاح! انتظر الهوست...";
+    
+    // هنا يمكنك إضافة كود لعرض الأسئلة فور بدئها من الهوست
+    onValue(ref(db, `rooms/${code}/state`), (snap) => {
+       if(snap.val() && snap.val().status === "playing") {
+         alert("بدأت اللعبة! استعد.");
+         // يمكنك توجيه اللاعب لواجهة الأسئلة هنا
+       }
     });
 
-    // تحديث المتصدرين في شاشة اللاعب
-    onValue(ref(db, `rooms/${myRoom}/players`), (snap) => {
-      const players = Object.values(snap.val() || {}).sort((a,b) => b.score - a.score);
-      document.getElementById('fullLb').innerHTML = players.slice(0, 5).map(p => `
-        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #444;">
-          <span>${p.name}</span><b>${p.score}</b>
-        </div>
-      `).join('');
-    });
-  };
-
-  window.send = function(id) {
-    update(ref(db, `rooms/${myRoom}/players/${myID}`), { score: increment(1000) });
-    alert("تم استلام إجابتك!");
-  };
+  } else {
+    msg.innerText = "كود الغرفة خاطئ أو لم يتم إنشاؤها بعد!";
+  }
+};
 </script>
 </body>
 </html>
-
