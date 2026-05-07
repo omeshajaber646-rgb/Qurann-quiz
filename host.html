@@ -2,51 +2,44 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>👑 لوحة تحكم أوميجا - محمد جابر</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --gold: #d4af37; --navy: #0a192f; --cream: #f3e5ab; --wine: #722f37; --glass: rgba(255, 255, 255, 0.03); }
+  :root { --gold: #d4af37; --navy: #0a192f; --cream: #f3e5ab; --wine: #722f37; }
   body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: var(--cream); margin: 0; overflow-x: hidden; }
   
-  /* شريط الأحداث الحية */
   #liveFeed {
     position: fixed; top: 20px; left: 20px; width: 350px; height: 70px;
     background: rgba(10, 25, 47, 0.95); border: 2px solid var(--gold);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
     font-weight: bold; color: var(--gold); font-size: 1.1rem; z-index: 1000;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); transition: 0.3s;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
   }
 
   .container { max-width: 1100px; margin: 0 auto; padding: 20px; text-align: center; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
-  .q-card { background: var(--glass); border: 2px solid var(--gold); border-radius: 24px; padding: 50px; position: relative; box-shadow: 0 10px 50px rgba(0,0,0,0.5); margin-bottom: 20px; }
-  .timer-bar { height: 10px; background: var(--gold); width: 100%; position: absolute; bottom: 0; left: 0; border-radius: 0 0 24px 24px; transition: width 0.2s linear; }
-  .question-text { font-size: 3rem; font-weight: 900; margin-bottom: 40px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-  .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .opt-item { background: rgba(212, 175, 55, 0.08); border: 1px solid var(--gold); padding: 20px; border-radius: 15px; font-size: 1.5rem; color: white; }
+  .room-info { font-size: 2rem; color: var(--gold); background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px; border: 1px solid var(--gold); }
   
-  .controls { margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-  button { background: var(--gold); color: var(--navy); border: none; padding: 15px 35px; border-radius: 50px; font-weight: 900; cursor: pointer; font-size: 1.1rem; transition: 0.3s; }
-  button:hover { transform: scale(1.05); box-shadow: 0 0 25px var(--gold); }
-  .btn-steal { background: var(--wine); color: white; }
-  .btn-admin { background: #34495e; color: white; }
+  .q-card { background: rgba(255,255,255,0.03); border: 2px solid var(--gold); border-radius: 24px; padding: 50px; position: relative; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
+  .timer-bar { height: 10px; background: var(--gold); width: 100%; position: absolute; bottom: 0; left: 0; border-radius: 0 0 24px 24px; transition: width 0.2s linear; }
+  .question-text { font-size: 3.2rem; font-weight: 900; margin-bottom: 40px; }
+  .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .opt-item { background: rgba(212, 175, 55, 0.08); border: 1px solid var(--gold); padding: 25px; border-radius: 15px; font-size: 1.8rem; color: white; }
+  
+  .controls { margin-top: 40px; display: flex; justify-content: center; gap: 20px; }
+  button { background: var(--gold); color: var(--navy); border: none; padding: 18px 45px; border-radius: 50px; font-weight: 900; cursor: pointer; font-size: 1.3rem; transition: 0.3s; }
+  button:hover { transform: scale(1.05); box-shadow: 0 0 30px var(--gold); }
 
   #leaderboard { position: fixed; right: 20px; top: 20px; width: 260px; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); padding: 20px; border-radius: 20px; }
   .lb-entry { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(212,175,55,0.2); }
-
-  /* لوحة الإدارة */
-  #adminPanel { display:none; background: rgba(10, 25, 47, 0.98); position: fixed; inset: 0; z-index: 9999; padding: 40px; overflow-y: auto; text-align: right; }
-  .admin-card { background: var(--glass); border: 1px solid var(--gold); padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-  input { background: #1a2a4a; border: 1px solid var(--gold); color: white; padding: 10px; border-radius: 8px; margin: 5px; font-family: 'Tajawal'; }
 </style>
 </head>
 <body>
 
-<div id="liveFeed">🔔 بانتظار بدء الجولة الملكية...</div>
+<div id="liveFeed">🔔 بانتظار المتنافسين...</div>
 
 <div class="container">
-  <h1 style="color: var(--gold); font-size: 3rem; margin-bottom: 5px; font-weight: 900;">OMEGA AIMAN JABIR</h1>
-  <p style="opacity: 0.7; margin-bottom: 30px;">نظام إدارة المسابقات الذكي - الموعظة من القرآن الكريم</p>
+  <h1 style="color: var(--gold); font-size: 3.5rem; margin-bottom: 10px;">OMEGA AIMAN JABIR</h1>
+  <div class="room-info">كود الغرفة: <span id="roomDisplay">----</span></div>
   
   <div class="q-card">
     <div class="question-text" id="qText">جاهز للمنافسة؟</div>
@@ -55,32 +48,15 @@
   </div>
 
   <div class="controls">
-    <button onclick="nextQuestion()">إطلاق السؤال 🚀</button>
-    <button class="btn-steal" onclick="triggerHeist()">تفعيل السرقة 🥷</button>
-    <button class="btn-admin" onclick="toggleAdmin()">⚙️ إدارة الأسئلة</button>
+    <button id="startBtn" onclick="startGame()" style="background:#2ecc71">ابدأ اللعبة 🏁</button>
+    <button id="nextBtn" onclick="nextQuestion()" style="display:none">السؤال التالي 🚀</button>
+    <button onclick="triggerHeist()" style="background:var(--wine); color:white;">تفعيل السرقة 🥷</button>
   </div>
 
   <div id="leaderboard">
-    <h3 style="color: var(--gold); margin-top: 0; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">المتصدرون 🏆</h3>
+    <h3 style="color: var(--gold); border-bottom: 2px solid var(--gold); padding-bottom: 10px;">المتصدرون 🏆</h3>
     <div id="lbItems"></div>
   </div>
-</div>
-
-<div id="adminPanel">
-    <h2 style="color: var(--gold);">🛠 إدارة بنك الأسئلة</h2>
-    <div id="questionsList" class="admin-card"></div>
-    
-    <div class="admin-card">
-        <h3>إضافة سؤال جديد:</h3>
-        <input type="text" id="newQ" placeholder="نص السؤال" style="width: 90%;">
-        <input type="text" id="opt0" placeholder="الإجابة الصحيحة" style="width: 45%;">
-        <input type="text" id="opt1" placeholder="خيار خاطئ 1" style="width: 45%;">
-        <input type="text" id="opt2" placeholder="خيار خاطئ 2" style="width: 45%;">
-        <input type="text" id="opt3" placeholder="خيار خاطئ 3" style="width: 45%;">
-        <br><br>
-        <button onclick="addNewQuestion()" style="background: #2ecc71;">حفظ ✅</button>
-        <button onclick="toggleAdmin()" style="background: #e74c3c;">إغلاق ✖️</button>
-    </div>
 </div>
 
 <script type="module">
@@ -99,88 +75,51 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const roomID = "OMEGA_SESSION";
 
-  // الأسئلة الابتدائية من ملف الموعظة
+  const roomCode = prompt("أدخل كود الغرفة المخصص للطلاب (مثلاً 2026):") || "2026";
+  document.getElementById('roomDisplay').innerText = roomCode;
+
   let questions = [
-    { q: "ما معنى الموعظة لغةً؟", opts: ["النصح والتذكير بالعواقب", "الشدة والغلظة", "القراءة فقط", "التجاهل"], ans: 0 },
-    { q: "في أي سورة وردت آية (وشفاء لما في الصدور)؟", opts: ["البقرة", "يونس", "لقمان", "آل عمران"], ans: 1 },
-    { q: "ما هو أعظم ظلم حذر منه لقمان ابنه؟", opts: ["الكذب", "السرقة", "الشرك بالله", "التكبر"], ans: 2 }
+    { q: "ما هو تعريف الموعظة لغةً؟", opts: ["النصح والتذكير", "الشدة", "الإهمال", "القراءة"], ans: 0 },
+    { q: "سورة ورد فيها (وشفاء لما في الصدور)؟", opts: ["البقرة", "يونس", "لقمان", "يوسف"], ans: 1 }
   ];
-
   let currentIdx = -1;
+
+  // تصفير الغرفة
+  set(ref(db, `rooms/${roomCode}/state`), { status: "waiting", event: "none", index: -1 });
+
+  window.startGame = function() {
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'inline-block';
+    nextQuestion();
+  };
 
   window.nextQuestion = function() {
     currentIdx++;
     if(currentIdx < questions.length) {
       const q = questions[currentIdx];
-      document.getElementById('qText').innerText = q.q;
-      document.getElementById('optGrid').innerHTML = q.opts.map(o => `<div class="opt-item">${o}</div>`).join('');
-      
-      set(ref(db, `rooms/${roomID}/state`), {
-        index: currentIdx,
+      set(ref(db, `rooms/${roomCode}/state`), {
         status: "playing",
+        index: currentIdx,
         event: "none",
         correct: q.ans
       });
-      startTimer();
-    } else {
-      alert("انتهت الأسئلة! شكراً للمشاركين.");
+      document.getElementById('qText').innerText = q.q;
+      document.getElementById('optGrid').innerHTML = q.opts.map(o => `<div class="opt-item">${o}</div>`).join('');
+      resetTimer();
     }
   };
 
   window.triggerHeist = function() {
-    update(ref(db, `rooms/${roomID}/state`), { event: "steal_mode" });
-    set(ref(db, `rooms/${roomID}/logs`), { msg: "⚠️ وضع السرقة مفعّل الآن! اضغط بسرعة" });
-    setTimeout(() => update(ref(db, `rooms/${roomID}/state`), { event: "none" }), 2500);
+    update(ref(db, `rooms/${roomCode}/state`), { event: "steal_active" });
+    setTimeout(() => update(ref(db, `rooms/${roomCode}/state`), { event: "none" }), 3000);
   };
 
-  // لوحة الإدارة
-  window.toggleAdmin = function() {
-    const p = document.getElementById('adminPanel');
-    p.style.display = p.style.display === 'none' ? 'block' : 'none';
-    renderAdminList();
-  };
-
-  function renderAdminList() {
-    const list = document.getElementById('questionsList');
-    list.innerHTML = questions.map((q, i) => `
-      <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #d4af37">
-        <span>${i+1}. ${q.q}</span>
-        <div>
-          <button onclick="moveQ(${i}, -1)">⬆️</button>
-          <button onclick="moveQ(${i}, 1)">⬇️</button>
-          <button onclick="deleteQ(${i})" style="background:red; color:white;">🗑️</button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  window.addNewQuestion = function() {
-    const q = document.getElementById('newQ').value;
-    const o = [document.getElementById('opt0').value, document.getElementById('opt1').value, 
-               document.getElementById('opt2').value, document.getElementById('opt3').value];
-    if(q && o[0]) {
-      questions.push({ q, opts: o, ans: 0 });
-      renderAdminList();
-      alert("تم الحفظ!");
-    }
-  };
-
-  window.deleteQ = function(i) { questions.splice(i, 1); renderAdminList(); };
-  window.moveQ = function(i, dir) {
-    if(questions[i+dir]) {
-      [questions[i], questions[i+dir]] = [questions[i+dir], questions[i]];
-      renderAdminList();
-    }
-  };
-
-  // متابعة الأحداث والترتيب
-  onValue(ref(db, `rooms/${roomID}/logs`), (s) => {
+  onValue(ref(db, `rooms/${roomCode}/logs`), (s) => {
     if(s.exists()) document.getElementById('liveFeed').innerText = s.val().msg;
   });
 
-  onValue(ref(db, `rooms/${roomID}/players`), (s) => {
+  onValue(ref(db, `rooms/${roomCode}/players`), (s) => {
     const data = s.val(); if(!data) return;
     const sorted = Object.values(data).sort((a,b) => b.score - a.score);
     document.getElementById('lbItems').innerHTML = sorted.slice(0, 5).map(p => `
@@ -188,15 +127,14 @@
     `).join('');
   });
 
-  function startTimer() {
+  function resetTimer() {
     let w = 100;
     const bar = document.getElementById('timerBar');
-    const timer = setInterval(() => {
+    const itv = setInterval(() => {
       w -= 1; bar.style.width = w + "%";
-      if(w <= 0) clearInterval(timer);
+      if(w <= 0) clearInterval(itv);
     }, 200);
   }
 </script>
 </body>
 </html>
-
