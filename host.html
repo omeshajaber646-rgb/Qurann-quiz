@@ -2,38 +2,42 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>👑 أوميجا - الإدارة السحابية</title>
+    <title>👑 أوميجا - الإدارة الفولاذية</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #d4af37; --navy: #0a192f; }
         body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: #fff; margin: 0; display: flex; height: 100vh; }
         .sidebar { width: 350px; background: rgba(0,0,0,0.5); border-left: 2px solid var(--gold); padding: 20px; overflow-y: auto; }
-        .main { flex: 1; padding: 30px; }
+        .main { flex: 1; padding: 30px; text-align: center; }
         .card { background: rgba(255,255,255,0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-bottom: 15px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--gold); background: #1a1a2e; color: #fff; }
-        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: bold; margin-top: 10px; }
-        .q-item { background: rgba(255,255,255,0.03); padding: 10px; margin-bottom: 10px; border-radius: 8px; border-right: 4px solid var(--gold); }
+        input { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--gold); background: #1a1a2e; color: #fff; font-family: 'Tajawal'; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: 900; margin-top: 10px; font-size: 1.1rem; }
+        .q-item { background: rgba(255,255,255,0.03); padding: 15px; margin-bottom: 10px; border-radius: 10px; border-right: 5px solid var(--gold); text-align: right; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--gold); text-align:center;">بنك الأسئلة المشترك ☁️</h2>
+    <h2 style="color:var(--gold); text-align:center;">📦 مخزن الأسئلة السحابي</h2>
     <div class="card">
-        <input type="text" id="newQ" placeholder="السؤال...">
-        <input type="text" id="opt0" placeholder="الجواب الصح ✅">
-        <input type="text" id="opt1" placeholder="خطأ 1">
-        <input type="text" id="opt2" placeholder="خطأ 2">
-        <input type="text" id="opt3" placeholder="خطأ 3">
-        <button class="btn" onclick="saveToFirebase()">💾 حفظ دائم (للكل)</button>
+        <input type="text" id="q" placeholder="اكتب السؤال...">
+        <input type="text" id="o0" placeholder="الجواب الصحيح ✅">
+        <input type="text" id="o1" placeholder="خيار خطأ 1">
+        <input type="text" id="o2" placeholder="خيار خطأ 2">
+        <input type="text" id="o3" placeholder="خيار خطأ 3">
+        <button class="btn" onclick="sendToCloud()">🚀 حفظ للأبد عند الكل</button>
     </div>
-    <div id="questionsList">جاري المزامنة...</div>
+    <div id="list">جاري المزامنة...</div>
 </div>
 
 <div class="main">
     <div class="card">
-        <h1>لوحة تحكم محمد وبهاء 👑</h1>
-        <div id="syncIndicator" style="color: orange;">جاري الفحص... ⏳</div>
+        <h1>تحكم محمد جابر وبهاء 👑</h1>
+        <p id="status" style="color:orange; font-weight:bold;">فحص الاتصال بالسيرفر... ⏳</p>
+        <button class="btn" style="background:#27ae60; color:#fff" onclick="makeRoom()">✨ إنشاء غرفة جديدة للطلاب</button>
+        <div id="roomArea" style="display:none; margin-top:20px;">
+            <h2 style="font-size:3rem; color:var(--gold)" id="codeOut">0000</h2>
+        </div>
     </div>
 </div>
 
@@ -41,8 +45,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-    // إعداداتك الصحيحة
-    const firebaseConfig = {
+    const config = {
         apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
         authDomain: "qurnn-1c9c4.firebaseapp.com",
         databaseURL: "https://qurnn-1c9c4-default-rtdb.firebaseio.com",
@@ -52,57 +55,56 @@
         appId: "1:483393093513:web:ae3ff0f67e6945a91b6b58"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(config);
     const db = getDatabase(app);
 
-    // فحص الاتصال
-    onValue(ref(db, '.info/connected'), (snap) => {
-        const status = document.getElementById('syncIndicator');
-        if (snap.val() === true) {
-            status.innerText = "متصل بالسحاب ✅ (جاهز للإضافة)";
-            status.style.color = "#2ecc71";
-        } else {
-            status.innerText = "غير متصل! افحص الإنترنت ❌";
-            status.style.color = "#ff4757";
-        }
+    // فحص الاتصال الحقيقي
+    onValue(ref(db, '.info/connected'), (s) => {
+        const st = document.getElementById('status');
+        if(s.val() === true) { st.innerText = "متصل بالسحاب ✅ (الأسئلة محفوظة)"; st.style.color = "#2ecc71"; }
+        else { st.innerText = "غير متصل! مشكلة بالنت أو القواعد ❌"; st.style.color = "#ff4757"; }
     });
 
-    // جلب الأسئلة وعرضها (بتحديث حي)
-    onValue(ref(db, 'global_questions'), (snapshot) => {
-        const listDiv = document.getElementById('questionsList');
-        const data = snapshot.val();
+    // جلب الأسئلة وعرضها (تحديث حي عند محمد وبهاء)
+    onValue(ref(db, 'omega_questions'), (snap) => {
+        const listDiv = document.getElementById('list');
+        const data = snap.val();
         listDiv.innerHTML = "";
-        if(!data) { listDiv.innerHTML = "لا يوجد أسئلة في السحاب."; return; }
-
+        if(!data) { listDiv.innerHTML = "لا يوجد أسئلة مخزنة."; return; }
+        
         Object.entries(data).forEach(([id, q]) => {
-            listDiv.innerHTML += `
-                <div class="q-item">
-                    <strong>${q.text}</strong>
-                    <button onclick="deleteQ('${id}')" style="background:red; color:white; border:none; padding:3px 10px; cursor:pointer; float:left;">حذف</button>
-                    <div style="clear:both"></div>
-                </div>`;
+            listDiv.innerHTML += `<div class="q-item">
+                <strong>${q.text}</strong><br>
+                <small style="color:#2ecc71">✅ ${q.options[0]}</small>
+                <button onclick="del('${id}')" style="background:red; color:white; border:none; padding:2px 8px; cursor:pointer; float:left; border-radius:5px;">حذف</button>
+                <div style="clear:both"></div>
+            </div>`;
         });
     });
 
-    window.saveToFirebase = function() {
-        const text = document.getElementById('newQ').value;
-        const o0 = document.getElementById('opt0').value;
-        if(!text || !o0) return alert("عبّي البيانات يا بطل!");
+    window.sendToCloud = function() {
+        const text = document.getElementById('q').value;
+        const o0 = document.getElementById('o0').value;
+        if(!text || !o0) return alert("يا محمد عبّي السؤال والجواب!");
 
-        const newQRef = push(ref(db, 'global_questions'));
-        set(newQRef, {
+        const newRef = push(ref(db, 'omega_questions'));
+        set(newRef, {
             text: text,
-            options: [o0, document.getElementById('opt1').value, document.getElementById('opt2').value, document.getElementById('opt3').value]
+            options: [o0, document.getElementById('o1').value, document.getElementById('o2').value, document.getElementById('o3').value]
         }).then(() => {
-            alert("✅ تم الحفظ بنجاح! هسا المفروض بينت عند بهاء.");
+            alert("✅ انحفظ بالسيرفر! مستحيل يطير بالريفريش.");
             document.querySelectorAll('input').forEach(i => i.value = "");
-        }).catch((error) => {
-            alert("❌ فشل الحفظ! السبب: " + error.message);
+        }).catch(e => {
+            alert("❌ السيرفر رفض الحفظ! السبب: " + e.message + "\nتأكد من الـ Rules في فايربيس.");
         });
     };
 
-    window.deleteQ = function(id) {
-        if(confirm("حذف نهائي؟")) remove(ref(db, `global_questions/${id}`));
+    window.del = function(id) { if(confirm("حذف نهائي؟")) remove(ref(db, `omega_questions/${id}`)); };
+
+    window.makeRoom = function() {
+        const c = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('codeOut').innerText = c;
+        document.getElementById('roomArea').style.display = "block";
     };
 </script>
 </body>
