@@ -2,52 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>👑 أوميجا - بنك الأسئلة العام</title>
+    <title>👑 أوميجا برو - نظام الأسئلة والقوى الخارقة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --navy: #0a192f; --wine: #c0392b; }
-        body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: #fff; margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 380px; background: rgba(0,0,0,0.6); border-left: 3px solid var(--gold); padding: 25px; overflow-y: auto; }
-        .main { flex: 1; padding: 40px; text-align: center; overflow-y: auto; }
-        .card { background: rgba(255,255,255,0.07); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--gold); background: #050b18; color: #fff; }
-        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 1.1rem; }
-        .q-item { background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 15px; border-radius: 12px; border-right: 6px solid var(--gold); text-align: right; }
-        .del-btn { background: var(--wine); color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; float: left; }
+        :root { --gold: #d4af37; --navy: #0a192f; --white: #ffffff; }
+        body { font-family: 'Tajawal', sans-serif; background: var(--navy); color: var(--white); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* القائمة الجانبية */
+        .sidebar { width: 350px; background: rgba(0,0,0,0.6); border-left: 3px solid var(--gold); padding: 20px; overflow-y: auto; }
+        .q-item { background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 10px; border-radius: 10px; border-right: 4px solid var(--gold); font-size: 0.85rem; }
+        
+        /* المنطقة الرئيسية */
+        .main { flex: 1; padding: 30px; text-align: center; overflow-y: auto; }
+        .card { background: rgba(255,255,255,0.08); border: 1px solid var(--gold); border-radius: 20px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); }
+        
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; cursor: pointer; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 1.1rem; transition: 0.3s; }
+        .btn:hover { transform: scale(1.02); background: #f1c40f; }
+        
+        /* أيقونات القوى الخارقة */
+        .power-box { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+        .power { padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--gold); font-size: 0.9rem; }
+
+        .code-out { font-size: 4rem; color: var(--gold); font-weight: 900; margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--gold); text-align:center;">🌐 بنك الأسئلة الموحد</h2>
-    <div class="card">
-        <p style="font-size:0.8rem; opacity:0.7">إضافة سؤال (سيظهر عند الجميع فوراً):</p>
-        <input type="text" id="q" placeholder="نص السؤال...">
-        <input type="text" id="o0" placeholder="الجواب الصحيح ✅">
-        <input type="text" id="o1" placeholder="خيار خطأ 1">
-        <input type="text" id="o2" placeholder="خيار خطأ 2">
-        <input type="text" id="o3" placeholder="خيار خطأ 3">
-        <button class="btn" onclick="saveToCloud()">💾 حفظ في بنك أوميجا</button>
-    </div>
-    <div id="list">جاري تحميل الأسئلة من السحاب...</div>
+    <h2 style="color:var(--gold); text-align:center;">🎯 بنك الأسئلة</h2>
+    <div id="questionsList"></div>
 </div>
 
 <div class="main">
     <div class="card">
-        <h1>منصة أوميجا للإدارة المشتركة 👑</h1>
-        <p id="netStatus" style="color:orange">فحص الاتصال بالمنصة...</p>
-        <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-        <button class="btn" style="background:#27ae60; color:white; width:auto; padding:20px 40px;" onclick="generateRoom()">✨ إنشاء غرفة تحدي جديدة</button>
-        <div id="roomBox" style="display:none; margin-top:30px;">
-            <h2 style="font-size:4rem; color:var(--gold); margin:0;" id="roomCode">----</h2>
-            <p>أعطِ هذا الكود للطلاب للدخول</p>
+        <h1>لوحة تحكم أوميجا المتقدمة 👑</h1>
+        <p>الإدارة: محمد جابر & بهاء كريم</p>
+        <button class="btn" style="background:#27ae60; color:#fff" onclick="startRoom()">✨ إنشاء غرفة + تفعيل القوى</button>
+        
+        <div id="roomArea" style="display:none; margin-top:20px;">
+            <p>كود دخول الطلاب:</p>
+            <div class="code-out" id="roomCode">----</div>
+            
+            <div class="power-box">
+                <div class="power">❄️ نظام التجميد: <b style="color:#3498db">نشط</b></div>
+                <div class="power">🛡️ نظام الدرع: <b style="color:#2ecc71">نشط</b></div>
+                <div class="power">💸 نظام السرقة: <b style="color:#e74c3c">نشط</b></div>
+            </div>
+            
+            <br>
+            <button class="btn" id="nextBtn" onclick="sendNextQ()">🚀 إرسال السؤال التالي</button>
         </div>
+    </div>
+
+    <div class="card" id="previewCard" style="display:none">
+        <h3 style="color:var(--gold); margin:0;">السؤال الحالي عند الطلاب:</h3>
+        <h2 id="currentQDisplay" style="margin: 15px 0;">جاهز للبدء...</h2>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
     const config = {
         apiKey: "AIzaSyDxbPH1pEScwMuRlnUqvKatCfit6xq-MfY",
@@ -62,63 +77,60 @@
     const app = initializeApp(config);
     const db = getDatabase(app);
 
-    // 1. فحص الاتصال بالمنصة
-    onValue(ref(db, '.info/connected'), (s) => {
-        const ns = document.getElementById('netStatus');
-        if(s.val() === true) { ns.innerText = "متصل بالبنك العام ✅"; ns.style.color = "#2ecc71"; }
-        else { ns.innerText = "فصل الاتصال ❌"; ns.style.color = "#e74c3c"; }
+    // الأسئلة الاحترافية من العارضة
+    const staticQuestions = [
+        { q: "ما هو الهدف الجوهري للموعظة القرآنية تجاه النفس البشرية؟", opts: ["إصلاحها وتزكيتها", "تثقيفها وتدريبها", "تخويفها وترهيبها", "توعيتها وتعريفها"] },
+        { q: "الموعظة لغةً هي النصح والتذكير، فما هو الأسلوب الأمثل لتحقيقها؟", opts: ["ما يلامس القلب ويليّنه", "ما يخاطب العقل ويقنعه", "ما يثير الخوف في النفس", "ما يوضح الحق من الباطل"] },
+        { q: "الاعتبار بأحوال الماضين وأخذ العبرة من مصيرهم يندرج تحت:", opts: ["الموعظة بالقصص", "الموعظة بالأمثال", "الموعظة بالترهيب", "الموعظة بالحكمة"] },
+        { q: "أسلوب 'الترغيب' في القرآن يعتمد بشكل أساسي على:", opts: ["ذكر ثواب الله ونعيم الجنة", "توضيح أحكام العبادات", "بيان عظمة الخالق سبحانه", "التذكير بنعم الله الدنيوية"] },
+        { q: "لماذا اعتبر لقمان الحكيم أن الشرك هو 'أظلم الظلم'؟", opts: ["لأنه جناية على حق الخالق", "لأنه يؤدي إلى نار جهنم", "لأنه يخالف الفطرة السليمة", "لأنه يفسد أخلاق المجتمع"] },
+        { q: "ما هو الركن الذي اعتبره لقمان 'أصل الاستقامة' في حياته؟", opts: ["إخلاص التوحيد لله", "المداومة على الصلاة", "البر التام بالوالدين", "التزام حسن الخلق"] },
+        { q: "تخصيص الأم بالذكر في وصايا لقمان جاء نتيجة:", opts: ["مشقة الحمل والتربية", "فضلها الأكبر في المنزل", "ضعفها وحاجتها للرعاية", "مكانتها العظيمة في الدين"] },
+        { q: "الوصية بـ 'إقامة الصلاة' بعد التوحيد مباشرة تدل على أنها:", opts: ["عماد الروح وصلة العبد", "أهم أركان الإسلام العملية", "وسيلة لتهذيب النفس فقط", "طريقة لتحقيق الطمأنينة"] },
+        { q: "الأمر بالمعروف والنهي عن المنكر يعكس دور المسلم كـ:", opts: ["مصلح ونافع للمجتمع", "مراقب لأعمال الآخرين", "ناصح للمقربين فقط", "داعية متخصص في الدين"] },
+        { q: "ما هو السلاح الأقوى لمواجهة تكاليف طريق الحق كما في الوصايا؟", opts: ["الصبر الجميل", "القوة والعزيمة", "العلم والحكمة", "المال والجاه"] },
+        { q: "النهي عن 'تصعير الخد للناس' يهدف إلى غرس قيمة:", opts: ["التواضع ونبذ الكبر", "اللين في الكلام", "احترام الخصوصية", "الوقار في المشي"] },
+        { q: "الخاتمة التربوية لوصايا لقمان ركزت على أن الخلق الحسن يؤدي لـ:", opts: ["محبة الله وقبول الناس", "الهداية والفلاح الدائم", "دخول الجنة والنجاة", "الراحة النفسية والسكينة"] }
+    ];
+
+    let currentQIdx = -1;
+    let roomID = "";
+
+    // عرض القائمة الجانبية
+    const listDiv = document.getElementById('questionsList');
+    staticQuestions.forEach((item, i) => {
+        listDiv.innerHTML += `<div class="q-item"><b>${i+1}.</b> ${item.q}</div>`;
     });
 
-    // 2. مزامنة الأسئلة (أي شخص يفتح الهوست يشوفها)
-    onValue(ref(db, 'omega_public_bank'), (snap) => {
-        const listDiv = document.getElementById('list');
-        const data = snap.val();
-        listDiv.innerHTML = "";
+    window.startRoom = function() {
+        roomID = Math.floor(1000 + Math.random() * 9000).toString();
+        document.getElementById('roomCode').innerText = roomID;
+        document.getElementById('roomArea').style.display = "block";
+        document.getElementById('previewCard').style.display = "block";
         
-        if(!data) {
-            listDiv.innerHTML = "<p style='text-align:center; opacity:0.5;'>البنك فارغ، كن أول من يضيف سؤالاً!</p>";
-            return;
-        }
-
-        Object.entries(data).forEach(([id, q]) => {
-            listDiv.innerHTML += `
-                <div class="q-item">
-                    <strong>${q.text}</strong><br>
-                    <small style="color:#2ecc71">✅ ${q.options[0]}</small>
-                    <button class="del-btn" onclick="deleteQ('${id}')">حذف</button>
-                    <div style="clear:both"></div>
-                </div>`;
-        });
-    });
-
-    // 3. الحفظ في السحاب (ببين عند الكل)
-    window.saveToCloud = function() {
-        const txt = document.getElementById('q').value;
-        const o0 = document.getElementById('o0').value;
-        if(!txt || !o0) return alert("البيانات ناقصة يا محمد!");
-
-        const newRef = push(ref(db, 'omega_public_bank'));
-        set(newRef, {
-            text: txt,
-            options: [o0, document.getElementById('o1').value, document.getElementById('o2').value, document.getElementById('o3').value]
-        }).then(() => {
-            document.querySelectorAll('input').forEach(i => i.value = "");
+        // تفعيل الغرفة مع نظام الخواص (Powers) في السحاب
+        set(ref(db, `rooms/${roomID}/state`), { 
+            status: "waiting",
+            powersEnabled: true 
         });
     };
 
-    // 4. الحذف من السحاب (بينحذف عند الكل)
-    window.deleteQ = function(id) {
-        if(confirm("هل تريد مسح هذا السؤال من البنك العام؟")) {
-            remove(ref(db, `omega_public_bank/${id}`));
+    window.sendNextQ = function() {
+        currentQIdx++;
+        if (currentQIdx < staticQuestions.length) {
+            const nextQ = staticQuestions[currentQIdx];
+            update(ref(db, `rooms/${roomID}/state`), {
+                status: "playing",
+                qText: nextQ.q,
+                options: nextQ.opts,
+                qIndex: currentQIdx
+            });
+            document.getElementById('currentQDisplay').innerText = `السؤال ${currentQIdx + 1}: ${nextQ.q}`;
+        } else {
+            document.getElementById('currentQDisplay').innerText = "🏁 الحصة انتهت بنجاح!";
+            update(ref(db, `rooms/${roomID}/state`), { status: "ended" });
         }
-    };
-
-    window.generateRoom = function() {
-        const code = Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('roomCode').innerText = code;
-        document.getElementById('roomBox').style.display = "block";
     };
 </script>
 </body>
 </html>
-
